@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from .config import settings
 from .database import engine, Base
-from .routes import auth, locations, menus
+from .routes import auth, locations, menus, heatmap
 
 # Configure logging
 logging.basicConfig(
@@ -43,6 +43,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(locations.router)
 app.include_router(menus.router)
+app.include_router(heatmap.router)
 
 # Serve uploaded files
 app.mount("/uploads", StaticFiles(directory=settings.uploadsDir), name="uploads")
@@ -91,4 +92,4 @@ async def root():
 
 if __name__ == "__main__":
   import uvicorn
-  uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+  uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
