@@ -7,12 +7,14 @@ type KakaoMapProps = {
   latitude: number;
   longitude: number;
   places: KakaoMapPlace[];
+  onPlaceClick: (place: KakaoMapPlace) => void;
 };
 
 export default function KakaoMap({
   latitude,
   longitude,
   places,
+  onPlaceClick,
 }: KakaoMapProps) {
   const map_js_api_key = process.env.EXPO_PUBLIC_JS_API_KEY;
   console.log(places);
@@ -57,6 +59,10 @@ export default function KakaoMap({
 
               kakao.maps.event.addListener(marker${index}, 'click', function() {
                 infoWindow${index}.open(map, marker${index});
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                  type: 'PLACE_CLICK',
+                  place: ${JSON.stringify(place)}
+                }));
               });
               `
                 )
@@ -86,7 +92,17 @@ export default function KakaoMap({
             window.ReactNativeWebView.postMessage(message);
           }
         })();`}
-        onMessage={(event) => console.log(event.nativeEvent.data)}
+        onMessage={(event) => {
+          try {
+            const message = JSON.parse(event.nativeEvent.data);
+            if (message.type === "PLACE_CLICK" && message.place) {
+              onPlaceClick(message.place);
+            }
+          } catch (error) {
+            // Handle non-JSON messages (like console.log messages)
+            console.log(event.nativeEvent.data);
+          }
+        }}
       />
     </View>
   );

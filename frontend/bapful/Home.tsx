@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, Button } from "react-native";
 import {
   getCurrentPositionAsync,
   requestForegroundPermissionsAsync,
 } from "expo-location";
 import KakaoMap from "./Kakaomap";
 import { KakaoMapPlace } from "./Kakaomap_place";
+import SlideUpModal from "./SlideUpModal";
+import UserProfileList from "./UserProfileList";
+import PlaceReview from "./PlaceReview";
 
 export default function Home() {
   const [currentLocation, setCurrentLocation] = useState<{
@@ -13,6 +16,9 @@ export default function Home() {
     longitude: number;
   } | null>(null);
   const [places, setPlaces] = useState<KakaoMapPlace[]>([]);
+  const [selectedPlace, setSelectedPlace] = useState<KakaoMapPlace | null>(
+    null
+  );
 
   const map_rest_api_key = process.env.EXPO_PUBLIC_REST_API_KEY;
 
@@ -63,6 +69,10 @@ export default function Home() {
     setPlaces(places);
   };
 
+  const handlePlaceClick = (place: KakaoMapPlace) => {
+    setSelectedPlace(place);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.container}>
@@ -74,11 +84,22 @@ export default function Home() {
             latitude={currentLocation.latitude}
             longitude={currentLocation.longitude}
             places={places}
+            onPlaceClick={handlePlaceClick}
           />
         ) : (
           <Text>위치를 가져오는 중입니다...</Text>
         )}
       </View>
+      {selectedPlace && (
+        <SlideUpModal
+          visible={selectedPlace !== null}
+          onClose={() => setSelectedPlace(null)}
+          backgroundColor="#ffffff" // Optional: default is white
+          backdropOpacity={0.5} // Optional: default is 0.5
+        >
+          <PlaceReview place={selectedPlace} />
+        </SlideUpModal>
+      )}
     </SafeAreaView>
   );
 }
