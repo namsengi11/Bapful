@@ -13,31 +13,29 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-
-type Place = {
-  id: number;
-  name: string;
-  address: string;
-  image: string;
-  description: string;
-};
+import { KakaoMapPlace } from './Kakaomap_place';
+import PlaceReview from './PlaceReview';
 
 type CategoryData = {
   category: string;
-  items: Place[];
+  items: KakaoMapPlace[];
 };
 
 const RecommendPage = () => {
   const [data, setData] = useState<CategoryData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<KakaoMapPlace | null>(null);
   const { t } = useTranslation();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get('https://your-api.com/recommendations');
-        setData(res.data); 
+        const res = await axios.get('백엔드 api 주소');
+        const formattedData = res.data.map((section: any) => ({
+          category: section.category,
+          items: section.items.map((item: any) => KakaoMapPlace.fromApiResponse(item)),
+        }));
+        setData(formattedData);
       } catch (e) {
         console.error('API fetch error:', e);
       } finally {
@@ -63,7 +61,7 @@ const RecommendPage = () => {
         </View>
       </View>
 
-      {/* 성향별 추천 리스트 */}
+      {/* 유저 성향별 추천 리스트 */}
       <ScrollView>
         {data.map((section, index) => (
           <View key={index} style={styles.section}>
@@ -71,12 +69,12 @@ const RecommendPage = () => {
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {section.items.map((place) => (
                 <TouchableOpacity
-                  key={place.id}
+                  key={`${place.x}-${place.y}`}
                   style={styles.imageBox}
                   onPress={() => setSelectedPlace(place)}
                 >
-                  <Image source={{ uri: place.image }} style={styles.image} />
-                  <Text style={styles.placeName}>{place.name}</Text>
+                  <Image source={{ uri: place.place_url }} style={styles.image} />
+                  <Text style={styles.placeName}>{place.place_name}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -88,9 +86,7 @@ const RecommendPage = () => {
       <Modal visible={!!selectedPlace} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{selectedPlace?.name}</Text>
-            <Text>{selectedPlace?.address}</Text>
-            <Text>{selectedPlace?.description}</Text>
+            {selectedPlace && <PlaceReview place={selectedPlace} />}
             <TouchableOpacity onPress={() => setSelectedPlace(null)} style={styles.closeBtn}>
               <Text style={{ color: '#fff' }}>{t('close')}</Text>
             </TouchableOpacity>
@@ -100,7 +96,6 @@ const RecommendPage = () => {
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#fff' },
@@ -125,7 +120,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 12,
   },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
   closeBtn: {
     marginTop: 20,
     padding: 10,
@@ -134,3 +128,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
+export default RecommendPage;
