@@ -99,7 +99,7 @@ export default function KakaoMap({
               onPlaceClick(message.place);
             }
           } catch (error) {
-            // Handle non-JSON messages(like console.log messages)
+            // Handle non-JSON messages  (like console.log messages)
             console.log(event.nativeEvent.data);
           }
         }}
