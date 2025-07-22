@@ -54,7 +54,7 @@ const RecommendPage = () => {
     <View style={styles.container}>
       {/* 헤더 */}
       <View style={styles.header}>
-        <Text style={styles.title}>{t('user_profile_title')} (ex. 매운맛 중독자)</Text>
+        <Text style={styles.title}>{t('user_profile_title')} (매운맛 중독자)</Text>
         <View style={styles.headerButtons}>
           <TouchableOpacity style={styles.redBtn} onPress={() => {/* navigation.navigate('UserProfile') */}} />
           <TouchableOpacity style={styles.orangeBtn} disabled />
