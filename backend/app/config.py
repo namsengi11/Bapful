@@ -10,7 +10,7 @@ class Settings(BaseSettings):
   # JWT
   jwtSecretKey: str = secrets.token_urlsafe(32)
   jwtAlgorithm: str = "HS256"
-  jwtExpirationHours: int = 24
+  jwtExpirationMinutes: int = 20
 
   # File Storage
   uploadsDir: str = "uploads"

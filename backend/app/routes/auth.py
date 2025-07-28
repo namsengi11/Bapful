@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 import logging
 
 from ..database import getDatabaseSession
-from ..auth import authenticateUser, createUser, getUserByEmail, createAccessToken
+from ..auth import authenticateUser, createUser, getUserByEmail, createAccessToken, invalidateToken
 from ..schemas import UserCreate, UserLogin, AuthResponse, UserResponse
 
 logger = logging.getLogger(__name__)
@@ -64,6 +64,9 @@ async def login(
 
     # Create access token
     accessToken = createAccessToken(data={"sub": user.id})
+
+    # # Invalidate previous token if record exist
+    # invalidateToken(db, user.id)
 
     return AuthResponse(
       token=accessToken,

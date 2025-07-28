@@ -19,6 +19,7 @@ class User(Base):
   # Relationships
   reviews = relationship("Review", back_populates="user")
   reviewRatings = relationship("ReviewRating", back_populates="user")
+  # lastLogin = relationship("LastLogin", back_populates="user")
 
 class Location(Base):
   __tablename__ = "locations"
@@ -87,3 +88,13 @@ class FileUpload(Base):
   fileSize = Column(Integer, nullable=False)
   mimeType = Column(String, nullable=False)
   uploadedAt = Column(DateTime, default=func.now())
+
+# class LastLogin(Base):
+#   __tablename__ = "last_logins"
+
+#   id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+#   userId = Column(String, ForeignKey("users.id"), nullable=False)
+#   lastLoginTime = Column(DateTime, nullable=False)
+
+#   # Relationships
+#   user = relationship("User", back_populates="lastLogin")

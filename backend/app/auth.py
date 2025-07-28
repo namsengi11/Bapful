@@ -30,7 +30,7 @@ def createAccessToken(data: dict, expiresDelta: Optional[timedelta] = None) -> s
   if expiresDelta:
     expire = datetime.utcnow() + expiresDelta
   else:
-    expire = datetime.utcnow() + timedelta(hours=settings.jwtExpirationHours)
+    expire = datetime.utcnow() + timedelta(minutes=settings.jwtExpirationMinutes)
 
   toEncode.update({"exp": expire})
   encodedJwt = jwt.encode(toEncode, settings.jwtSecretKey, algorithm=settings.jwtAlgorithm)
@@ -38,6 +38,7 @@ def createAccessToken(data: dict, expiresDelta: Optional[timedelta] = None) -> s
 
 def verifyToken(token: str) -> Optional[str]:
   """Verify JWT token and return user ID"""
+  # TODO: Change to Access/Refresh token later
   try:
     payload = jwt.decode(token, settings.jwtSecretKey, algorithms=[settings.jwtAlgorithm])
     userId: str = payload.get("sub")
