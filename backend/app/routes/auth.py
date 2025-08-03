@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 import logging
 
 from ..database import getDatabaseSession
-from ..auth import authenticateUser, createUser, getUserByEmail, createAccessToken, invalidateToken
+from ..auth import authenticateUser, createUser, getUserByEmail, createAccessToken
 from ..schemas import UserCreate, UserLogin, AuthResponse, UserResponse
 
 logger = logging.getLogger(__name__)
