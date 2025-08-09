@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView, Button } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, Button, TouchableOpacity } from "react-native";
 import {
   getCurrentPositionAsync,
   requestForegroundPermissionsAsync,
@@ -10,7 +10,7 @@ import SlideUpModal from "./SlideUpModal";
 import UserProfileList from "./UserProfileList";
 import PlaceReview from "./PlaceReview";
 
-export default function Home() {
+export default function Home({ navigation }: { navigation: any }) {
   const [currentLocation, setCurrentLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -75,30 +75,29 @@ export default function Home() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.text}>Bapful</Text>
-        </View>
-        {currentLocation ? (
-          <KakaoMap
-            latitude={currentLocation.latitude}
-            longitude={currentLocation.longitude}
-            places={places}
-            onPlaceClick={handlePlaceClick}
-          />
-        ) : (
-          <Text>위치를 가져오는 중입니다...</Text>
-        )}
+      <View style={styles.header}>
+        <Text style={styles.text}>Bapful</Text>
       </View>
-      {selectedPlace && (
-        <SlideUpModal
-          visible={selectedPlace !== null}
-          onClose={() => setSelectedPlace(null)}
-          backgroundColor="#ffffff" // Optional: default is white
-          backdropOpacity={0.5} // Optional: default is 0.5
+      
+      {/* RecommendPage 이동 버튼 추가 */}
+      <View style={styles.mainActions}>
+        <TouchableOpacity 
+          style={styles.recommendButton} 
+          onPress={() => navigation.navigate('RecommendPage')}
         >
-          <PlaceReview place={selectedPlace} />
-        </SlideUpModal>
+          <Text style={styles.buttonText}>맛집 추천 보기</Text>
+        </TouchableOpacity>
+      </View>
+      
+      {currentLocation ? (
+        <KakaoMap
+          latitude={currentLocation.latitude}
+          longitude={currentLocation.longitude}
+          places={places}
+          onPlaceClick={handlePlaceClick}
+        />
+      ) : (
+        <Text>위치를 가져오는 중입니다...</Text>
       )}
     </SafeAreaView>
   );
@@ -122,5 +121,23 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 24,
+  },
+  mainActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    padding: 20,
+  },
+  recommendButton: {
+    backgroundColor: '#007bff',
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+    marginHorizontal: 10,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontSize: 16,
   },
 });

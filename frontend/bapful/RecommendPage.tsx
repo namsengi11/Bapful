@@ -30,14 +30,18 @@ const RecommendPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get('백엔드 api 주소');
+        // 장소 기반 추천
+        const res = await axios.get('http://127.0.0.1:8000/locations/');
+        // 메뉴 기반 추천
+        // const res = await axios.get('http://127.0.0.1:8000/menus/');
+
         const formattedData = res.data.map((section: any) => ({
           category: section.category,
           items: section.items.map((item: any) => KakaoMapPlace.fromApiResponse(item)),
         }));
         setData(formattedData);
       } catch (e) {
-        console.error('API fetch error:', e);
+        console.error('Failed to fetch recommendations:', e);
       } finally {
         setLoading(false);
       }
