@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
 import { View, StyleSheet, Text, SafeAreaView, Dimensions } from "react-native";
 import { WebView } from "react-native-webview";
-import { KakaoMapPlace } from "./Kakaomap_place";
+import { Place } from "./Place";
 
 type KakaoMapProps = {
   latitude: number;
   longitude: number;
-  places: KakaoMapPlace[];
-  onPlaceClick: (place: KakaoMapPlace) => void;
+  places: Place[];
+  onPlaceClick: (place: Place) => void;
 };
 
 export default function KakaoMap({
@@ -48,12 +48,12 @@ export default function KakaoMap({
                 .map(
                   (place, index) => `
               const marker${index} = new kakao.maps.Marker({
-                position: new kakao.maps.LatLng(${place.y}, ${place.x})
+                position: new kakao.maps.LatLng(${place.latitude}, ${place.longitude})
               });
               marker${index}.setMap(map);
 
               const infoWindow${index} = new kakao.maps.InfoWindow({
-                content: '<div style="padding:5px;">${place.place_name}</div>'
+                content: '<div style="padding:5px;">${place.name}</div>'
               });
 
               kakao.maps.event.addListener(marker${index}, 'click', function() {

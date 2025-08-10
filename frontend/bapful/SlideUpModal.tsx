@@ -17,7 +17,6 @@ type SlideUpModalProps = {
   visible: boolean;
   onClose: () => void;
   children: ReactNode;
-  height?: number;
   backgroundColor?: string;
   backdropOpacity?: number;
 };
@@ -26,25 +25,28 @@ export default function SlideUpModal({
   visible,
   onClose,
   children,
-  height = screenHeight * 0.8,
   backgroundColor = "#ffffff",
   backdropOpacity = 0.5,
 }: SlideUpModalProps) {
-  const slideAnimation = useRef(new Animated.Value(height)).current;
+  const MAX_MODAL_HEIGHT = screenHeight * 0.8;
+  const slideAnimation = useRef(new Animated.Value(screenHeight)).current;
   const backdropAnimation = useRef(new Animated.Value(0)).current;
 
+  const CLOSE_VELOCITY_VY = 0.8;
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponderCapture: (
         evt: GestureResponderEvent,
         gestureState: PanResponderGestureState
       ) => {
-        // Only respond to vertical gestures with lower threshold for better responsiveness
-        return (
-          Math.abs(gestureState.dy) > Math.abs(gestureState.dx) &&
-          Math.abs(gestureState.dy) > 5
-        );
+        // Capture only fast downward swipes; let children handle slower gestures
+        const isPredominantlyVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
+        const isDownward = gestureState.dy > 0;
+        const isFast = gestureState.vy > CLOSE_VELOCITY_VY;
+        return isPredominantlyVertical && isDownward && isFast;
       },
       onPanResponderMove: (
         evt: GestureResponderEvent,
@@ -59,11 +61,11 @@ export default function SlideUpModal({
         evt: GestureResponderEvent,
         gestureState: PanResponderGestureState
       ) => {
-        // If dragged down more than half of modal height or with sufficient velocity, close modal
-        if (gestureState.dy > screenHeight * 0.4 || gestureState.vy > 0.3) {
+        // Close only on fast flicks, otherwise pass/keep content state
+        if (gestureState.vy > CLOSE_VELOCITY_VY && gestureState.dy > 0) {
           closeModal();
         } else {
-          // Otherwise, snap back to open position
+          // Snap back to open position
           Animated.spring(slideAnimation, {
             toValue: 0,
             useNativeDriver: false,
@@ -72,20 +74,18 @@ export default function SlideUpModal({
           }).start();
         }
       },
+      onPanResponderTerminationRequest: () => false,
     })
   ).current;
 
   useEffect(() => {
-    if (visible) {
-      openModal();
-    } else {
-      closeModal();
-    }
+    if (visible) openModal();
+    else closeModal();
   }, [visible]);
 
   const openModal = () => {
-    // Reset position
-    slideAnimation.setValue(height);
+    // Reset position off-screen
+    slideAnimation.setValue(screenHeight);
 
     // Animate in
     Animated.parallel([
@@ -105,7 +105,7 @@ export default function SlideUpModal({
   const closeModal = () => {
     Animated.parallel([
       Animated.timing(slideAnimation, {
-        toValue: height,
+        toValue: screenHeight,
         duration: 250,
         useNativeDriver: false,
       }),
@@ -147,21 +147,21 @@ export default function SlideUpModal({
         </TouchableWithoutFeedback>
 
         {/* Modal Content */}
-        <Animated.View
-          style={[
-            styles.modalContainer,
-            {
-              height,
-              backgroundColor,
-              transform: [{ translateY: slideAnimation }],
-            },
-          ]}
-          {...panResponder.panHandlers}
-        >
-          {/* Drag Handle */}
-          <View style={styles.dragHandleContainer}>
-            <View style={styles.dragHandle} />
-          </View>
+          <Animated.View
+            style={[
+              styles.modalContainer,
+              {
+                maxHeight: MAX_MODAL_HEIGHT,
+                backgroundColor,
+                transform: [{ translateY: slideAnimation }],
+              },
+            ]}
+          >
+            <View
+              style={styles.swipeZone}
+              pointerEvents="box-only"
+              {...panResponder.panHandlers}
+            />
 
           {/* Content */}
           <View style={styles.content}>{children}</View>
@@ -211,8 +211,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   content: {
-    flex: 1,
     paddingHorizontal: 20,
     paddingBottom: 20,
+  },
+  swipeZone: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 60,
+    zIndex: 1,
+    backgroundColor: 'transparent',
   },
 });

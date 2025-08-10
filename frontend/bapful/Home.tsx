@@ -5,7 +5,6 @@ import {
   requestForegroundPermissionsAsync,
 } from "expo-location";
 import KakaoMap from "./Kakaomap";
-import { KakaoMapPlace } from "./Kakaomap_place";
 import SlideUpModal from "./SlideUpModal";
 import UserProfileList from "./UserProfileList";
 import PlaceReview from "./PlaceReview";
@@ -13,31 +12,16 @@ import TopBanner from "./TopBanner";
 import colors from "./colors";
 import Searchbar from "./Searchbar";
 import PlaceResultPage from "./PlaceResultPage";
-
-export interface Place {
-  latitude: number;
-  longitude: number;
-  name: string;
-  address: string;
-  description: string;
-  rating: number;
-  ratingCount: number;
-  reviews: {
-    user: string;
-    comment: string;
-    rating: number;
-    date: string;
-  }[];
-  images: string[];
-}
+import PlacePreview from "./PlacePreview";
+import { Place } from "./Place";
 
 export default function Home() {
   const [currentLocation, setCurrentLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
-  const [places, setPlaces] = useState<KakaoMapPlace[]>([]);
-  const [selectedPlace, setSelectedPlace] = useState<KakaoMapPlace | null>(
+  const [places, setPlaces] = useState<Place[]>([]);
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(
     null
   );
   const [showPlaceDetail, setShowPlaceDetail] = useState<boolean>(false);
@@ -81,7 +65,6 @@ export default function Home() {
   };
 
   const getNearbyTourism = async () => {
-    console.log("new");
     const response = await fetch(
       `https://dapi.kakao.com/v2/local/search/keyword.json?query=관광지&x=${currentLocation?.longitude}&y=${currentLocation?.latitude}&radius=2000`,
       {
@@ -93,13 +76,15 @@ export default function Home() {
     const data = await response.json();
 
     // Map data to KakaoMapPlace[]
+    console.log(data.documents);
     const places = data.documents.map((place: any) =>
-      KakaoMapPlace.fromApiResponse(place)
+      Place.fromKakaoAPIResponse(place)
     );
+    console.log(places);
     setPlaces(places);
   };
 
-  const handlePlaceClick = (place: KakaoMapPlace) => {
+  const handlePlaceClick = (place: Place) => {
     setSelectedPlace(place);
     setShowPlaceDetail(true);
   };
@@ -132,9 +117,12 @@ export default function Home() {
           visible={showPlaceDetail}
           onClose={() => setShowPlaceDetail(false)}
           backgroundColor={colors.secondaryColor} // Optional: default is white
-          backdropOpacity={0.5} // Optional: default is 0.5
+          backdropOpacity={0} // Optional: default is 0.5
         >
-          <PlaceReview place={selectedPlace!} />
+          {/* <PlaceReview place={selectedPlace!} /> */}
+          <View style={styles.placePreviewContainer}>
+            <PlacePreview place={selectedPlace!} />
+          </View>
         </SlideUpModal>
 
         {/* Search Result Modal */}
@@ -142,7 +130,7 @@ export default function Home() {
           visible={showPlaceResultPage}
           onClose={() => setShowPlaceResultPage(false)}
           backgroundColor={colors.secondaryColor} // Optional: default is white
-          backdropOpacity={0.5} // Optional: default is 0.5
+          backdropOpacity={0.3} // Optional: default is 0.5
         >
           <PlaceResultPage searchKeyword={searchKeyword} searchedPlaces={searchedPlaces} />
         </SlideUpModal>
@@ -175,5 +163,9 @@ const styles = StyleSheet.create({
     height: 50,
 
     zIndex: 1000,
+  },
+  placePreviewContainer: {
+    width: "100%",
+    height: Dimensions.get("window").height * 0.3,
   },
 });

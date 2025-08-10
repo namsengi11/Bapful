@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, Dimensions } from "react-native";
 
-import { Place } from "./Home";
+import { Place } from "./Place";
 import colors from "./colors";
 
 export default function PlacePreview({place}: {place: Place}) {

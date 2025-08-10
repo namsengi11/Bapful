@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList, Dimensions } from "react-native";
 
-import { Place } from "./Home";
+import { Place } from "./Place";
 import PlacePreview from "./PlacePreview";
 import colors from "./colors";
 
@@ -25,13 +25,16 @@ export default function PlaceResultPage({searchKeyword, searchedPlaces}: {search
   );
 }
 
+const screenHeight = Dimensions.get("window").height;
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: screenHeight * 0.70,
     width: "100%",
   },
   searchKeywordContainer: {
     paddingLeft: 16,
+    paddingTop: 16,
     width: "100%",
   },
   searchKeywordText: {

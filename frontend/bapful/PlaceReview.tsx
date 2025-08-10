@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet } from "react-native";
-import { KakaoMapPlace } from "./Kakaomap_place";
+import { Place } from "./Place";
 import UserProfileList from "./UserProfileList";
 import { useState } from "react";
 import { Reviewer } from "./Reviewer";
 
-export default function PlaceReview({ place }: { place: KakaoMapPlace }) {
+export default function PlaceReview({ place }: { place: Place }) {
   console.log(place);
   const [selectedUser, setSelectedUser] = useState<Reviewer | null>(null);
 
@@ -51,9 +51,9 @@ export default function PlaceReview({ place }: { place: KakaoMapPlace }) {
     <View style={styles.container}>
       <View style={styles.description}>
         <Text style={styles.titleText}>Description</Text>
-        <Text style={styles.descriptionText}>{place.place_name}</Text>
-        <Text style={styles.descriptionText}>{place.address_name}</Text>
-        <Text style={styles.descriptionText}>{place.phone}</Text>
+        <Text style={styles.descriptionText}>{place.name}</Text>
+        <Text style={styles.descriptionText}>{place.address}</Text>
+        <Text style={styles.descriptionText}>{place.description}</Text>
       </View>
       <View style={styles.otherReviewers}>
         <Text style={styles.titleText}>Other Reviewers</Text>
