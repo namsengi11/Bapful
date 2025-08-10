@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import './i18n'; // i18n 설정 import 추가
 import { View, Text, StyleSheet, SafeAreaView, Button, TouchableOpacity } from "react-native";
 import {
   getCurrentPositionAsync,
@@ -9,6 +10,7 @@ import { KakaoMapPlace } from "./Kakaomap_place";
 import SlideUpModal from "./SlideUpModal";
 import UserProfileList from "./UserProfileList";
 import PlaceReview from "./PlaceReview";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Home({ navigation }: { navigation: any }) {
   const [currentLocation, setCurrentLocation] = useState<{

@@ -11,7 +11,6 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { KakaoMapPlace } from './Kakaomap_place';
 import PlaceReview from './PlaceReview';
@@ -25,7 +24,6 @@ const RecommendPage = () => {
   const [data, setData] = useState<CategoryData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlace, setSelectedPlace] = useState<KakaoMapPlace | null>(null);
-  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,7 +56,7 @@ const RecommendPage = () => {
     <View style={styles.container}>
       {/* 헤더 */}
       <View style={styles.header}>
-        <Text style={styles.title}>{t('user_profile_title')} (매운맛 중독자)</Text>
+        <Text style={styles.title}>사용자 프로필 (매운맛 중독자)</Text>
         <View style={styles.headerButtons}>
           <TouchableOpacity style={styles.redBtn} onPress={() => {/* navigation.navigate('UserProfile') */}} />
           <TouchableOpacity style={styles.orangeBtn} disabled />
@@ -69,7 +67,7 @@ const RecommendPage = () => {
       <ScrollView>
         {data.map((section, index) => (
           <View key={index} style={styles.section}>
-            <Text style={styles.sectionTitle}>{t(section.category)}</Text>
+            <Text style={styles.sectionTitle}>{section.category}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {section.items.map((place) => (
                 <TouchableOpacity
@@ -92,7 +90,7 @@ const RecommendPage = () => {
           <View style={styles.modalContent}>
             {selectedPlace && <PlaceReview place={selectedPlace} />}
             <TouchableOpacity onPress={() => setSelectedPlace(null)} style={styles.closeBtn}>
-              <Text style={{ color: '#fff' }}>{t('close')}</Text>
+              <Text style={{ color: '#fff' }}>닫기</Text>
             </TouchableOpacity>
           </View>
         </View>
