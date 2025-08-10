@@ -17,7 +17,6 @@ export default function KakaoMap({
   onPlaceClick,
 }: KakaoMapProps) {
   const map_js_api_key = process.env.EXPO_PUBLIC_JS_API_KEY;
-  console.log(places);
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -112,7 +111,6 @@ const styles = StyleSheet.create({
   container: {
     width: Dimensions.get("window").width,
     height: Dimensions.get("window").height,
-    marginTop: 20,
     borderWidth: 1,
     borderColor: "#ddd",
   },
