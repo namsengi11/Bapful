@@ -37,7 +37,7 @@ export default function SignupPage({ navigation }: { navigation: any }) {
   };
 
   const handleSignup = async () => {
-    // 입력값 검증
+    // 입력값 검증 (phone 제거)
     if (!email || !password || !confirmPassword || !username) {
       Alert.alert('오류', '모든 필수 필드를 입력해주세요.');
       return;
@@ -61,16 +61,11 @@ export default function SignupPage({ navigation }: { navigation: any }) {
       return;
     }
 
-    if (phone && !validatePhone(phone)) {
-      Alert.alert('오류', '올바른 전화번호 형식을 입력해주세요. (예: 010-1234-5678)');
-      return;
-    }
-
     setIsLoading(true);
 
     try {
       // 회원가입 API 호출
-      const response = await fetch('http://127.0.0.1:8000/auth/signup/', {
+      const response = await fetch('http://127.0.0.1:8000/auth/register', { // signup -> register
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,8 +73,8 @@ export default function SignupPage({ navigation }: { navigation: any }) {
         body: JSON.stringify({
           email,
           password,
-          username,
-          phone: phone || null,
+          name: username, // username -> name
+          // phone 제거 (백엔드에서 지원 안함)
         }),
       });
 
@@ -135,13 +130,13 @@ export default function SignupPage({ navigation }: { navigation: any }) {
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>사용자명 *</Text>
+            <Text style={styles.label}>이름 *</Text> {/* 사용자명 -> 이름 */}
             <TextInput
               style={styles.input}
               value={username}
               onChangeText={setUsername}
-              placeholder="사용자명을 입력하세요"
-              autoCapitalize="none"
+              placeholder="이름을 입력하세요" {/* placeholder 수정 */}
+              autoCapitalize="words" {/* none -> words */}
               autoCorrect={false}
             />
           </View>
@@ -175,6 +170,8 @@ export default function SignupPage({ navigation }: { navigation: any }) {
             />
           </View>
 
+          {/* 전화번호 필드 제거하거나 주석 처리 */}
+          {/* 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>전화번호 (선택)</Text>
             <TextInput
@@ -186,6 +183,7 @@ export default function SignupPage({ navigation }: { navigation: any }) {
               autoCorrect={false}
             />
           </View>
+          */}
 
           <TouchableOpacity
             style={[styles.signupButton, isLoading && styles.disabledButton]}
