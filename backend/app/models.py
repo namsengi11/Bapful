@@ -35,8 +35,17 @@ class Location(Base):
   updatedAt = Column(DateTime, default=func.now(), onupdate=func.now())
 
   # Relationships
+  images = relationship("Image", back_populates="location")
   reviews = relationship("Review", back_populates="location")
   menus = relationship("Menu", back_populates="location")
+
+class Image(Base):
+  __tablename__ = "images"
+
+  id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+  locationId = Column(String, ForeignKey("locations.id"), nullable=False)
+  imageUrl = Column(String, nullable=False)
+  createdAt = Column(DateTime, default=func.now())
 
 class Review(Base):
   __tablename__ = "reviews"

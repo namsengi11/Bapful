@@ -1,11 +1,14 @@
 import uuid
 import random
+import requests
+
 from typing import List, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 from math import radians, cos, sin, asin, sqrt
 from fastapi import HTTPException
 
+from .config import settings
 from .models import User, Location, Review, ReviewRating, Menu
 from .schemas import MenuLabel, BoundingBox, LocationCreate
 
@@ -22,6 +25,14 @@ def calculateDistance(lat1: float, lng1: float, lat2: float, lng2: float) -> flo
 
 class LocationService:
   """Service for location-related operations"""
+  tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/areaBasedList1?serviceKey={settings.tourAPIKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202508&areaCd=11&signguCd=11530"
+
+  kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json?query=관광지"
+  kakaoAPIQuery = [
+    "&x=",
+    "&y=",
+    "&radius="
+  ]
 
   @staticmethod
   def getLocation(db: Session, locationId: str) -> dict:
@@ -39,6 +50,12 @@ class LocationService:
     location.location_type = "restaurant"
 
     return location
+
+  @staticmethod
+  def getTourAPILocations() -> dict:
+    """Get locations from tour API"""
+    response = requests.get(LocationService.tourAPIUrl)
+    return response.json()
 
   @staticmethod
   def createLocation(db: Session, locationData: LocationCreate) -> dict:
@@ -63,6 +80,23 @@ class LocationService:
     return LocationService.getLocation(db, location.id)
 
   @staticmethod
+  def getKakaoLocations(lat: float, lng: float, radius: int = 1000) -> List[dict]:
+    """Get locations from Kakao API"""
+    queryUrl = LocationService.kakaoAPIUrl + LocationService.kakaoAPIQuery[0] + str(lng) + LocationService.kakaoAPIQuery[1] + str(lat) + LocationService.kakaoAPIQuery[2] + str(radius)
+    response = requests.get(
+      queryUrl,
+      headers={"Authorization": f"KakaoAK {settings.kakaomap_restapi_key}"}
+    )
+    return response.json()
+
+  @staticmethod
+  def getTourAPILocations() -> List[dict]:
+    """Get locations from tour API"""
+    pass
+    # response = requests.get(LocationService.tourAPIUrl)
+    # return response.json()
+
+  @staticmethod
   def getNearbyLocations(db: Session, lat: float, lng: float, radius: int = 1000) -> List[dict]:
     """Get locations within radius with average ratings"""
     # Query the database for locations within radius
@@ -71,6 +105,9 @@ class LocationService:
         (Location.latitude - lat) * (Location.latitude - lat) + (Location.longitude - lng) * (Location.longitude - lng)
       ) <= radius
     ).all()
+
+    kakaoLocations = LocationService.getKakaoLocations(lat, lng, radius)
+    tourAPILocations = LocationService.getTourAPILocations()
 
     # Calculate distances and filter by radius
     filtered_locations = []

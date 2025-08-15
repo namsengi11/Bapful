@@ -152,3 +152,13 @@ async def rateReview(
       status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
       detail="Failed to rate review"
     )
+
+@router.get("/search")
+async def searchLocations(
+  query: str,
+  lat: float = Query(..., description="Latitude"),
+  lng: float = Query(..., description="Longitude"),
+  db: Session = Depends(getDatabaseSession)
+):
+  """Search for locations"""
+  return LocationService.searchLocations(db, query, lat, lng)
