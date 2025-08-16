@@ -74,7 +74,11 @@ export async function logout() {
   await AsyncStorage.multiRemove([TOKEN_STORAGE_KEY, USER_STORAGE_KEY]);
 }
 
-// (healthCheck removed in reverted version)
+// Health check (re-added)
+export async function healthCheck(): Promise<any> {
+  const { data } = await api.get('/health');
+  return data;
+}
 
 // Recommendation types & API
 export interface RecommendationItem {
