@@ -68,4 +68,26 @@ export class Place {
       images: [],
     });
   }
+
+  static fromRecommendationItem(item: {
+    location_id: string;
+    name: string;
+    location_type: string;
+    coordinates: { lat: number; lng: number };
+    avg_rating: number;
+    review_count: number;
+    distance?: number | null;
+  }): Place {
+    return new Place({
+      latitude: item.coordinates.lat,
+      longitude: item.coordinates.lng,
+      name: item.name,
+      address: "",
+      description: "",
+      rating: item.avg_rating,
+      ratingCount: item.review_count,
+      reviews: [],
+      images: [],
+    });
+  }
 }

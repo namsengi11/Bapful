@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView, Button, Dimensions } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, Button, Dimensions, TouchableOpacity } from "react-native";
 import {
   getCurrentPositionAsync,
   requestForegroundPermissionsAsync,
@@ -15,7 +15,9 @@ import PlaceResultPage from "./PlaceResultPage";
 import PlacePreview from "./PlacePreview";
 import { Place } from "./Place";
 
-export default function Home() {
+interface HomeProps { onShowRecommendations?: () => void }
+
+export default function Home({ onShowRecommendations }: HomeProps) {
   const [currentLocation, setCurrentLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -112,6 +114,11 @@ export default function Home() {
         </View>
 
       </View>
+      {onShowRecommendations && (
+        <TouchableOpacity style={styles.recommendButton} onPress={onShowRecommendations}>
+          <Text style={styles.recommendButtonText}>추천 보기</Text>
+        </TouchableOpacity>
+      )}
         {/* Place Detail Modal */}
         <SlideUpModal
           visible={showPlaceDetail}
@@ -168,4 +175,18 @@ const styles = StyleSheet.create({
     width: "100%",
     height: Dimensions.get("window").height * 0.3,
   },
+  recommendButton: {
+    position: 'absolute',
+    bottom: 40,
+    right: 20,
+    backgroundColor: colors.primaryColor,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 24,
+    elevation: 4,
+  },
+  recommendButtonText: {
+    color: '#4a2d00',
+    fontWeight: '600'
+  }
 });

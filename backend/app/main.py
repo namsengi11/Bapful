@@ -6,8 +6,12 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
 from .config import settings
-from .database import engine, Base
-from .routes import auth, locations, menus, heatmap
+from .database import engine, Base, SessionLocal
+from .models import Location, Review, User
+from .auth import getPasswordHash
+from sqlalchemy.orm import Session
+import uuid
+from .routes import auth, locations, menus, heatmap, recommendations
 
 # Configure logging
 logging.basicConfig(
@@ -39,11 +43,58 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
+# Seed dummy data if empty
+def seed_dummy_data():
+  db: Session = SessionLocal()
+  try:
+    if db.query(Location).count() == 0:
+      # Ensure at least one user exists for reviews
+      user = db.query(User).first()
+      if not user:
+        user = User(id=str(uuid.uuid4()), name="Demo User", email="demo@example.com", hashedPassword=getPasswordHash("password"))
+        db.add(user)
+        db.flush()
+
+      dummy_locations = [
+        {"name": "Mapo BBQ", "location_type": "restaurant", "lat": 37.5665, "lng": 126.9780, "address": "Seoul", "desc": "Classic Korean BBQ."},
+        {"name": "Kimchi House", "location_type": "restaurant", "lat": 37.5651, "lng": 126.9895, "address": "Seoul", "desc": "Homemade kimchi specials."},
+        {"name": "Bibimbap Corner", "location_type": "restaurant", "lat": 37.5700, "lng": 126.9768, "address": "Seoul", "desc": "Fresh bibimbap bowls."},
+        {"name": "Spicy Tteokbokki", "location_type": "restaurant", "lat": 37.5682, "lng": 126.9820, "address": "Seoul", "desc": "Chewy rice cakes & fish cakes."},
+      ]
+      new_loc_objs = []
+      for d in dummy_locations:
+        loc = Location(
+          name=d["name"],
+          location_type=d["location_type"],
+          latitude=d["lat"],
+          longitude=d["lng"],
+          address=d["address"],
+          description=d["desc"],
+        )
+        db.add(loc)
+        new_loc_objs.append(loc)
+      db.flush()
+      # Add a couple of reviews to generate ratings
+      for loc in new_loc_objs:
+        r1 = Review(userId=user.id, locationId=loc.id, rating=5, comment=f"Great food at {loc.name}")
+        r2 = Review(userId=user.id, locationId=loc.id, rating=4, comment=f"Nice atmosphere at {loc.name}")
+        db.add_all([r1, r2])
+      db.commit()
+      logger.info("Seeded dummy locations & reviews")
+  except Exception as e:
+    logger.error(f"Failed seeding dummy data: {e}")
+    db.rollback()
+  finally:
+    db.close()
+
+seed_dummy_data()
+
 # Include routers
 app.include_router(auth.router)
 app.include_router(locations.router)
 app.include_router(menus.router)
 app.include_router(heatmap.router)
+app.include_router(recommendations.router)
 
 # Serve uploaded files
 app.mount("/uploads", StaticFiles(directory=settings.uploadsDir), name="uploads")

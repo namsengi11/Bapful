@@ -1,6 +1,6 @@
 // RecommendPage.tsx
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -13,31 +13,60 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import { KakaoMapPlace } from './Kakaomap_place';
+import { Place } from './Place';
+import { getRecommendations, RecommendationSection, API_BASE_URL, healthCheck } from './api';
+import * as Location from 'expo-location';
 import PlaceReview from './PlaceReview';
 
 type CategoryData = {
   category: string;
-  items: KakaoMapPlace[];
+  items: Place[];
 };
 
-const RecommendPage = () => {
+interface RecommendPageProps { onBack?: () => void }
+
+const RecommendPage = ({ onBack }: RecommendPageProps) => {
   const [data, setData] = useState<CategoryData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPlace, setSelectedPlace] = useState<KakaoMapPlace | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [coords, setCoords] = useState<{lat:number; lng:number} | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const { t } = useTranslation();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get('백엔드 api 주소');
-        const formattedData = res.data.map((section: any) => ({
+        setLoading(true);
+        console.log('[Recommend] Using API base:', API_BASE_URL);
+        // Quick health check (will throw if network unreachable)
+        try {
+          const hc = await healthCheck();
+          console.log('[Recommend] Health OK:', hc);
+        } catch (err) {
+          console.log('[Recommend] Health check failed', err);
+        }
+        // Try to get location (optional)
+        try {
+          const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status === 'granted') {
+              const loc = await Location.getCurrentPositionAsync({});
+              setCoords({ lat: loc.coords.latitude, lng: loc.coords.longitude });
+            }
+        } catch {
+          // ignore location errors
+        }
+        const sections: RecommendationSection[] = await getRecommendations({ lat: coords?.lat, lng: coords?.lng });
+        const formattedData = sections.map(section => ({
           category: section.category,
-          items: section.items.map((item: any) => KakaoMapPlace.fromApiResponse(item)),
+          items: section.items.map(item => Place.fromRecommendationItem(item)),
         }));
         setData(formattedData);
-      } catch (e) {
+      } catch (e: any) {
         console.error('API fetch error:', e);
+        if (e?.message === 'Network Error') {
+          console.log('[Recommend] Possible causes: wrong base URL, server down, http->https blocked, emulator offline');
+        }
+        setError(e?.message || 'Failed to load');
       } finally {
         setLoading(false);
       }
@@ -46,9 +75,9 @@ const RecommendPage = () => {
     fetchData();
   }, []);
 
-  if (loading) {
-    return <ActivityIndicator size="large" style={{ flex: 1 }} />;
-  }
+  if (loading) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+  if (error) return <View style={styles.center}><Text>{error}</Text></View>;
+  if (!data.length) return <View style={styles.center}><Text>추천 데이터가 없습니다.</Text></View>;
 
   return (
     <View style={styles.container}>
@@ -56,8 +85,11 @@ const RecommendPage = () => {
       <View style={styles.header}>
         <Text style={styles.title}>{t('user_profile_title')} (매운맛 중독자)</Text>
         <View style={styles.headerButtons}>
-          <TouchableOpacity style={styles.redBtn} onPress={() => {/* navigation.navigate('UserProfile') */}} />
-          <TouchableOpacity style={styles.orangeBtn} disabled />
+          {onBack && (
+            <TouchableOpacity style={styles.backBtn} onPress={onBack}>
+              <Text style={{color:'#fff'}}>뒤로</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -69,12 +101,13 @@ const RecommendPage = () => {
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {section.items.map((place) => (
                 <TouchableOpacity
-                  key={`${place.x}-${place.y}`}
+                  key={`${place.latitude}-${place.longitude}`}
                   style={styles.imageBox}
                   onPress={() => setSelectedPlace(place)}
                 >
-                  <Image source={{ uri: place.place_url }} style={styles.image} />
-                  <Text style={styles.placeName}>{place.place_name}</Text>
+                  {/* Placeholder image handling; adjust field names based on backend response */}
+                  <Image source={{ uri: place.images?.[0] || 'https://via.placeholder.com/100' }} style={styles.image} />
+                  <Text style={styles.placeName}>{place.name}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -104,6 +137,7 @@ const styles = StyleSheet.create({
   headerButtons: { flexDirection: 'row' },
   redBtn: { width: 20, height: 20, backgroundColor: 'red', marginLeft: 8 },
   orangeBtn: { width: 20, height: 20, backgroundColor: 'orange', marginLeft: 8 },
+  backBtn: { paddingHorizontal:12, paddingVertical:6, backgroundColor:'#8a5a00', borderRadius:8, marginLeft:8 },
   section: { marginTop: 24 },
   sectionTitle: { fontSize: 14, fontWeight: '600', marginBottom: 8 },
   imageBox: { marginRight: 12, alignItems: 'center' },
@@ -127,6 +161,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
+  center: { flex:1, justifyContent:'center', alignItems:'center' }
 });
 
 export default RecommendPage;
