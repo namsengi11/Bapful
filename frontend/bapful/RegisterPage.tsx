@@ -1,62 +1,161 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image
+} from 'react-native';
 import { register } from './api';
 
-interface RegisterPageProps { onSuccess?: () => void; goToLogin?: () => void; }
+interface RegisterPageProps {
+  onSuccess?: () => void;
+  goToLogin?: () => void;
+}
+
+const BG = '#FAF1DC';
+const ACCENT = '#8B5E2B';
+const TITLE = '#5A260F';
 
 const RegisterPage = ({ onSuccess, goToLogin }: RegisterPageProps) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [pw, setPw] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const disabled = !name || !email || !password || password !== confirm;
+  const disabled = !name || !email || !pw || pw !== confirm;
 
-  const handleRegister = async () => {
+  async function handleRegister() {
     if (disabled) {
-      Alert.alert('Error', 'Fill all fields and ensure passwords match.');
+      Alert.alert('알림', '모든 항목을 채우고 비밀번호를 확인하세요.');
       return;
     }
     setLoading(true);
     try {
-      const data = await register(name, email, password);
-      Alert.alert('Success', `Welcome ${data.user.name}!`);
+      const data = await register(name.trim(), email.trim(), pw);
+      Alert.alert('환영합니다', `${data.user.name} 님 가입 완료`);
       onSuccess && onSuccess();
     } catch (e: any) {
-      const msg = e?.response?.data?.detail || e?.message || 'Failed to register';
-      Alert.alert('Failed', msg);
+      const msg = e?.response?.data?.detail || e?.message || '회원가입 실패';
+      Alert.alert('실패', msg);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
-      <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} />
-      <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize='none' keyboardType='email-address' />
-      <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
-      <TextInput style={styles.input} placeholder="Confirm Password" value={confirm} onChangeText={setConfirm} secureTextEntry />
-      <TouchableOpacity style={[styles.button, disabled && styles.buttonDisabled]} disabled={disabled || loading} onPress={handleRegister}>
-        {loading ? <ActivityIndicator color='#fff' /> : <Text style={styles.buttonText}>Create Account</Text>}
-      </TouchableOpacity>
-      <TouchableOpacity onPress={goToLogin} style={styles.linkArea}>
-        <Text style={styles.linkText}>Already have an account? Login</Text>
-      </TouchableOpacity>
-    </View>
+    <KeyboardAvoidingView
+      style={styles.root}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={styles.container}>
+        <View style={styles.logoBox}>
+          <Image
+            source={require('./assets/bapful_logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.welcome}>Create Account</Text>
+          <Text style={styles.tagline}>find your soul food !</Text>
+        </View>
+
+        <View style={styles.form}>
+          <Field
+            icon={require('./assets/user.png')}
+            placeholder="Name"
+            value={name}
+            onChangeText={setName}
+          />
+          <Separator />
+          <Field
+            icon={require('./assets/user.png')}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <Separator />
+          <Field
+            icon={require('./assets/user.png')}
+            placeholder="Password"
+            value={pw}
+            onChangeText={setPw}
+            secureTextEntry
+          />
+          <Separator />
+            <Field
+              icon={require('./assets/user.png')}
+              placeholder="Confirm Password"
+              value={confirm}
+              onChangeText={setConfirm}
+              secureTextEntry
+            />
+          <Separator />
+
+          {pw && confirm && pw !== confirm && (
+            <Text style={styles.warn}>비밀번호가 일치하지 않습니다.</Text>
+          )}
+
+          <TouchableOpacity
+            style={[styles.submitBtn, (disabled || loading) && { opacity: 0.55 }]}
+            disabled={disabled || loading}
+            onPress={handleRegister}
+          >
+            {loading
+              ? <ActivityIndicator color="#FFF" />
+              : <Text style={styles.submitText}>Sign Up</Text>}
+          </TouchableOpacity>
+
+          {goToLogin && (
+            <TouchableOpacity style={styles.linkBtn} onPress={goToLogin}>
+              <Text style={styles.linkText}>이미 계정이 있나요? Login</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
+const Field = (props: any) => (
+  <View style={styles.inputRow}>
+    <Image source={props.icon} style={styles.icon} />
+    <TextInput
+      style={styles.input}
+      placeholderTextColor="#C9B298"
+      {...props}
+    />
+  </View>
+);
+
+const Separator = () => <View style={styles.separator} />;
+
 const styles = StyleSheet.create({
-  container: { flex:1, justifyContent:'center', padding:24, backgroundColor:'#fff' },
-  title: { fontSize:24, fontWeight:'bold', textAlign:'center', marginBottom:32 },
-  input: { borderWidth:1, borderColor:'#ccc', borderRadius:8, padding:12, marginBottom:12 },
-  button: { backgroundColor:'#dfb65e', padding:16, borderRadius:8, alignItems:'center', marginTop:8 },
-  buttonDisabled: { opacity:0.5 },
-  buttonText: { color:'#fff', fontWeight:'bold', fontSize:16 },
-  linkArea: { marginTop:20, alignItems:'center' },
-  linkText: { color:'#555' }
+  root: { flex: 1, backgroundColor: BG },
+  container: { flex: 1, paddingHorizontal: 40, justifyContent: 'center' },
+  logoBox: { alignItems: 'center', marginBottom: 50 },
+  logo: { width: 180, height: 110, marginBottom: 10 },
+  welcome: { fontSize: 28, fontWeight: '700', color: TITLE, letterSpacing: 0.5 },
+  tagline: { fontSize: 14, color: ACCENT, marginTop: 4 },
+  form: {},
+  inputRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14 },
+  icon: { width: 24, height: 24, marginRight: 12, tintColor: ACCENT, opacity: 0.9 },
+  input: { flex: 1, fontSize: 15, color: '#3E2812', paddingVertical: 0 },
+  separator: { height: 1, backgroundColor: '#E3CCAF' },
+  warn: { marginTop: 12, color: '#B00020', fontSize: 12 },
+  submitBtn: {
+    marginTop: 36,
+    backgroundColor: ACCENT,
+    paddingVertical: 15,
+    borderRadius: 40,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3
+  },
+  submitText: { color: '#FFF', fontSize: 16, fontWeight: '600', letterSpacing: 0.5 },
+  linkBtn: { marginTop: 24, alignItems: 'center' },
+  linkText: { color: ACCENT, fontSize: 13, textDecorationLine: 'underline' }
 });
 
 export default RegisterPage;

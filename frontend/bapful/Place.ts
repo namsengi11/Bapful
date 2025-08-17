@@ -1,3 +1,5 @@
+import { RecommendationItem } from './api';
+
 export class Place {
   latitude: number;
   longitude: number;
@@ -69,23 +71,15 @@ export class Place {
     });
   }
 
-  static fromRecommendationItem(item: {
-    location_id: string;
-    name: string;
-    location_type: string;
-    coordinates: { lat: number; lng: number };
-    avg_rating: number;
-    review_count: number;
-    distance?: number | null;
-  }): Place {
+  static fromRecommendationItem(item: RecommendationItem): Place {
     return new Place({
-      latitude: item.coordinates.lat,
-      longitude: item.coordinates.lng,
+      latitude: item.coordinates?.lat ?? 0,
+      longitude: item.coordinates?.lng ?? 0,
       name: item.name,
       address: "",
       description: "",
-      rating: item.avg_rating,
-      ratingCount: item.review_count,
+      rating: item.avg_rating ?? 0,
+      ratingCount: item.review_count ?? 0,
       reviews: [],
       images: [],
     });

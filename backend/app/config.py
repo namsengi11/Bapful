@@ -1,29 +1,38 @@
 import os
 import secrets
 from typing import Optional
-from pydantic_settings import BaseSettings
+from pydantic import BaseSettings
 
 class Settings(BaseSettings):
-  # Database
-  databaseUrl: str
+    # Database
+    DATABASE_URL: str = "sqlite:///./bapful.db"
+    # 과거 camelCase 호환
+    databaseUrl: str | None = None
 
-  # JWT
-  jwtSecretKey: str = secrets.token_urlsafe(32)
-  jwtAlgorithm: str = "HS256"
-  jwtExpirationMinutes: int = 20
+    SEED_DUMMY: bool = False  # 필요 시 .env 에 SEED_DUMMY=true
 
-  # File Storage
-  uploadsDir: str = "uploads"
-  maxFileSize: int = 10 * 1024 * 1024  # 10MB
-  allowedExtensions: set = {".jpg", ".jpeg", ".png", ".webp"}
+    # JWT
+    jwtSecretKey: str = secrets.token_urlsafe(32)
+    jwtAlgorithm: str = "HS256"
+    jwtExpirationMinutes: int = 20
 
-  # App
-  appName: str = "Bapful API"
-  appVersion: str = "1.0.0"
-  debugMode: bool = False
+    # File Storage
+    uploadsDir: str = "uploads"
+    maxFileSize: int = 10 * 1024 * 1024  # 10MB
+    allowedExtensions: set = {".jpg", ".jpeg", ".png", ".webp"}
 
-  class Config:
-    env_file = ".env"
+    # App
+    appName: str = "Bapful API"
+    appVersion: str = "1.0.0"
+    debugMode: bool = False
+
+    class Config:
+        env_file = ".env"
+        case_sensitive = False
+
+    @property
+    def effective_database_url(self) -> str:
+        return self.databaseUrl or self.DATABASE_URL
 
 settings = Settings()
 

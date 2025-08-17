@@ -1,68 +1,194 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Image,
+  Alert
+} from 'react-native';
 import { login } from './api';
 
-interface LoginPageProps { navigation?: any; onSuccess?: () => void; goToRegister?: () => void; }
+interface LoginPageProps {
+  navigation?: any;
+  onSuccess?: () => void;
+  goToRegister?: () => void;
+}
+
 const LoginPage = ({ navigation, onSuccess, goToRegister }: LoginPageProps) => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [pw, setPw] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter your email and password.');
+  async function handleLogin() {
+    if (!email || !pw) {
+      Alert.alert('알림', 'Username / Password 를 입력하세요.');
       return;
     }
     setLoading(true);
     try {
-      const data = await login(email, password);
-      Alert.alert('Success', `Welcome ${data.user.name}!`);
+      const res = await login(email.trim(), pw);
       if (onSuccess) onSuccess();
       else if (navigation) navigation.replace('Home');
     } catch (e: any) {
-      const msg = e?.response?.data?.detail || e?.message || 'Failed to login';
-      Alert.alert('Failed to login', msg);
+      Alert.alert('로그인 실패', e?.response?.data?.detail || e?.message || 'Failed');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.linkArea} onPress={goToRegister}>
-        <Text style={styles.linkText}>Create an account</Text>
-      </TouchableOpacity>
-    </View>
+    <KeyboardAvoidingView
+      style={styles.root}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={styles.container}>
+        <View style={styles.logoBox}>
+          <Image
+            source={require('./assets/bapful_logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.welcome}>Welcome,</Text>
+          <Text style={styles.tagline}>find your soul food !</Text>
+        </View>
+
+        <View style={styles.form}>
+          <View style={styles.inputRow}>
+            <Image source={require('./assets/user.png')} style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Username"
+              placeholderTextColor="#C9B298"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
+          </View>
+          <View style={styles.separator} />
+
+          <View style={styles.inputRow}>
+            <Image source={require('./assets/user.png')} style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor="#C9B298"
+              value={pw}
+              onChangeText={setPw}
+              secureTextEntry
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+            />
+          </View>
+          <View style={styles.separator} />
+
+          <TouchableOpacity
+            style={[styles.loginBtn, loading && { opacity: 0.6 }]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading
+              ? <ActivityIndicator color="#FFF" />
+              : <Text style={styles.loginText}>Login</Text>}
+          </TouchableOpacity>
+
+          {goToRegister && (
+            <TouchableOpacity style={styles.registerLink} onPress={goToRegister}>
+              <Text style={styles.registerText}>Create an account</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
+const BG = '#FAF1DC';
+const ACCENT = '#8B5E2B';
+const TITLE = '#5A260F';
+
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#fff' },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 32, textAlign: 'center' },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 16 },
-  button: { backgroundColor: '#dfb65e', padding: 16, borderRadius: 8, alignItems: 'center' },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-  linkArea: { marginTop: 20, alignItems: 'center' },
-  linkText: { color: '#555' }
+  root: { flex: 1, backgroundColor: BG },
+  container: {
+    flex: 1,
+    paddingHorizontal: 40,
+    justifyContent: 'center'
+  },
+  logoBox: {
+    alignItems: 'center',
+    marginBottom: 56
+  },
+  logo: {
+    width: 200,
+    height: 120,
+    marginBottom: 10
+  },
+  welcome: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: TITLE,
+    letterSpacing: 0.5
+  },
+  tagline: {
+    fontSize: 15,
+    color: ACCENT,
+    marginTop: 6
+  },
+  form: {},
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14
+  },
+  icon: {
+    width: 26,
+    height: 26,
+    marginRight: 12,
+    tintColor: ACCENT,
+    opacity: 0.9
+  },
+  input: {
+    flex: 1,
+    fontSize: 15,
+    color: '#3E2812',
+    paddingVertical: 0
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#E3CCAF'
+  },
+  loginBtn: {
+    marginTop: 40,
+    backgroundColor: ACCENT,
+    paddingVertical: 15,
+    borderRadius: 40,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3
+  },
+  loginText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.5
+  },
+  registerLink: {
+    marginTop: 22,
+    alignItems: 'center'
+  },
+  registerText: {
+    color: ACCENT,
+    fontSize: 13,
+    textDecorationLine: 'underline'
+  }
 });
 
 export default LoginPage;
