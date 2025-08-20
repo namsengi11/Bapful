@@ -10,7 +10,7 @@ from fastapi import HTTPException
 
 from .config import settings
 from .models import User, Location, Review, ReviewRating, Menu
-from .schemas import MenuLabel, BoundingBox, LocationCreate
+from .schemas import MenuLabel, BoundingBox, LocationCreate, KakaoLocation, TourAPILocation, LocationResponse
 
 def calculateDistance(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
   """Calculate distance between two coordinates in meters using Haversine formula"""
@@ -25,10 +25,16 @@ def calculateDistance(lat1: float, lng1: float, lat2: float, lng2: float) -> flo
 
 class LocationService:
   """Service for location-related operations"""
-  tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/areaBasedList1?serviceKey={settings.tourAPIKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202508&areaCd=11&signguCd=11530"
+  # Keyword based search has auth issues
+  # tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/searchKeyword1?serviceKey={settings.tourAPIKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=51&signguCd=51130&keyword=음식&_type=json"
 
-  kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json?query=관광지"
+  # Use area based search for now
+  tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/areaBasedList1?serviceKey={settings.tourAPIKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=51&signguCd=51130&_type=json"
+
+
+  kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json"
   kakaoAPIQuery = [
+    "?query=",
     "&x=",
     "&y=",
     "&radius="
@@ -50,12 +56,6 @@ class LocationService:
     location.location_type = "restaurant"
 
     return location
-
-  @staticmethod
-  def getTourAPILocations() -> dict:
-    """Get locations from tour API"""
-    response = requests.get(LocationService.tourAPIUrl)
-    return response.json()
 
   @staticmethod
   def createLocation(db: Session, locationData: LocationCreate) -> dict:
@@ -80,21 +80,53 @@ class LocationService:
     return LocationService.getLocation(db, location.id)
 
   @staticmethod
+  def getTourAPILocations(lat: float, lng: float, radius: int = 1000) -> dict:
+    """Get locations from tour API"""
+
+    # Logic to get area code for API from lat, lng
+
+    response = requests.get(LocationService.tourAPIUrl).json()['response']['body']['items']['item']
+    result = []
+    for item in response:
+      if item['rlteCtgryLclsNm'] != "음식":
+        continue
+      # Extract name and find coordinates
+      name = item['rlteTatsNm']
+      coordinates = LocationService.getCoordFromKakao(name)
+      item['x'] = coordinates[1]
+      item['y'] = coordinates[0]
+      item['address'] = coordinates[2]
+      tourLocation = TourAPILocation.fromTourAPIResult(item)
+      result.append(tourLocation)
+
+    resultToLocationResponse = [LocationResponse.model_validate(location) for location in result]
+
+    return resultToLocationResponse
+
+  @staticmethod
   def getKakaoLocations(lat: float, lng: float, radius: int = 1000) -> List[dict]:
     """Get locations from Kakao API"""
-    queryUrl = LocationService.kakaoAPIUrl + LocationService.kakaoAPIQuery[0] + str(lng) + LocationService.kakaoAPIQuery[1] + str(lat) + LocationService.kakaoAPIQuery[2] + str(radius)
+    queryUrl = LocationService.kakaoAPIUrl + LocationService.kakaoAPIQuery[0] + "음식" + LocationService.kakaoAPIQuery[1] + str(lat) + LocationService.kakaoAPIQuery[2] + str(radius)
     response = requests.get(
       queryUrl,
       headers={"Authorization": f"KakaoAK {settings.kakaomap_restapi_key}"}
     )
-    return response.json()
+
+    result = [KakaoLocation.fromKakaoAPIResult(location) for location in response.json()["documents"]]
+    print(result)
+    resultToLocationResponse = [LocationResponse.model_validate(location) for location in result]
+    print(resultToLocationResponse)
+    return resultToLocationResponse
 
   @staticmethod
-  def getTourAPILocations() -> List[dict]:
-    """Get locations from tour API"""
-    pass
-    # response = requests.get(LocationService.tourAPIUrl)
-    # return response.json()
+  def getCoordFromKakao(queryName: str) -> Tuple[float, float, str]:
+    """Get coordinates from Kakao API"""
+    queryUrl = LocationService.kakaoAPIUrl + LocationService.kakaoAPIQuery[0] + queryName + LocationService.kakaoAPIQuery[1]
+    response = requests.get(
+      queryUrl,
+      headers={"Authorization": f"KakaoAK {settings.kakaomap_restapi_key}"}
+    )
+    return response.json()["documents"][0]["y"], response.json()["documents"][0]["x"], response.json()["documents"][0]["address_name"]
 
   @staticmethod
   def getNearbyLocations(db: Session, lat: float, lng: float, radius: int = 1000) -> List[dict]:
@@ -107,20 +139,13 @@ class LocationService:
     ).all()
 
     kakaoLocations = LocationService.getKakaoLocations(lat, lng, radius)
-    tourAPILocations = LocationService.getTourAPILocations()
+    tourAPILocations = LocationService.getTourAPILocations(lat, lng, radius)
 
-    # Calculate distances and filter by radius
-    filtered_locations = []
-    for location in locations:
-      distance = calculateDistance(
-        lat, lng,
-        location["coordinates"]["lat"],
-        location["coordinates"]["lng"]
-      )
-      if distance <= radius:
-        filtered_locations.append(location)
+    # Async save result to db
+    locations = locations + kakaoLocations + tourAPILocations
+    print(locations)
 
-    return filtered_locations
+    return locations
 
   @staticmethod
   def getLocationReviews(

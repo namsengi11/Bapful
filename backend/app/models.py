@@ -47,6 +47,8 @@ class Image(Base):
   imageUrl = Column(String, nullable=False)
   createdAt = Column(DateTime, default=func.now())
 
+  location = relationship("Location", back_populates="images")
+
 class Review(Base):
   __tablename__ = "reviews"
 

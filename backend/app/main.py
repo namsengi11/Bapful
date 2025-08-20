@@ -25,6 +25,7 @@ except Exception as e:
 
 # Create FastAPI app
 app = FastAPI(
+  root_path="/api",
   title=settings.appName,
   version=settings.appVersion,
   description="API for Bapful - Travel Restaurant Review App"
