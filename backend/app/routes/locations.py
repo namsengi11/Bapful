@@ -30,17 +30,7 @@ async def getNearbyLocations(
   """Get nearby reviewed locations"""
   try:
     locations = LocationService.getNearbyLocations(db, lat, lng, radius)
-    return [
-      LocationResponse(
-        id=loc["id"],
-        name=loc["name"],
-        location_type=loc["location_type"],
-        coordinates=loc["coordinates"],
-        avg_rating=loc["avg_rating"],
-        review_count=loc["review_count"]
-      )
-      for loc in locations
-    ]
+    return locations
 
   except Exception as e:
     logger.error(f"Error fetching nearby locations: {e}")
@@ -152,3 +142,13 @@ async def rateReview(
       status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
       detail="Failed to rate review"
     )
+
+@router.get("/search")
+async def searchLocations(
+  query: str,
+  lat: float = Query(..., description="Latitude"),
+  lng: float = Query(..., description="Longitude"),
+  db: Session = Depends(getDatabaseSession)
+):
+  """Search for locations"""
+  return LocationService.searchLocations(db, query, lat, lng)

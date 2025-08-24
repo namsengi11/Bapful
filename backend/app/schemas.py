@@ -26,6 +26,11 @@ class Coordinates(BaseModel):
   lat: float
   lng: float
 
+  # Construct from x, y format
+  @classmethod
+  def from_x_y(cls, x: float, y: float):
+    return cls(lat=y, lng=x)
+
 class LocationCreate(BaseModel):
   name: str
   location_type: str
@@ -38,11 +43,54 @@ class LocationResponse(BaseModel):
   name: str
   location_type: str
   coordinates: Coordinates
+  address: Optional[str] = None
+  description: Optional[str] = None
   avg_rating: Optional[float] = None
   review_count: Optional[int] = None
 
   class Config:
     from_attributes = True
+
+class KakaoLocation(BaseModel):
+  id: str
+  name: str
+  location_type: str
+  coordinates: Coordinates
+  address: Optional[str] = None
+  description: Optional[str] = None
+  avg_rating: Optional[float] = None
+  review_count: Optional[int] = None
+
+  @classmethod
+  def fromKakaoAPIResult(cls, location: dict):
+    return cls(
+      id=location["id"],
+      name=location["place_name"],
+      location_type=location["category_group_name"],
+      coordinates=Coordinates.from_x_y(location["x"], location["y"]),
+      address=location["address_name"],
+      description=location["place_url"]
+    )
+
+class TourAPILocation(BaseModel):
+  id: str
+  name: str
+  location_type: str
+  coordinates: Coordinates
+  address: Optional[str] = None
+  description: Optional[str] = None
+  avg_rating: Optional[float] = None
+  review_count: Optional[int] = None
+
+  @classmethod
+  def fromTourAPIResult(cls, location: dict):
+    return cls(
+      id=location["tAtsCd"],
+      name=location["rlteTatsNm"],
+      location_type=location["rlteCtgryLclsNm"],
+      coordinates=Coordinates.from_x_y(location["x"], location["y"]),
+      address=location["address"],
+    )
 
 class LocationsQuery(BaseModel):
   lat: float
