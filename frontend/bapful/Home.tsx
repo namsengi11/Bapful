@@ -65,22 +65,24 @@ export default function Home() {
   };
 
   const getNearbyTourism = async () => {
+    // const response = await fetch(
+    //   `https://dapi.kakao.com/v2/local/search/keyword.json?query=관광지&x=${currentLocation?.longitude}&y=${currentLocation?.latitude}&radius=2000`,
+    //   {
+    //     headers: {
+    //       Authorization: `KakaoAK ${map_rest_api_key}`,
+    //     },
+    //   }
+    // );
+    // const data = await response.json();
+
     const response = await fetch(
-      `https://dapi.kakao.com/v2/local/search/keyword.json?query=관광지&x=${currentLocation?.longitude}&y=${currentLocation?.latitude}&radius=2000`,
-      {
-        headers: {
-          Authorization: `KakaoAK ${map_rest_api_key}`,
-        },
-      }
+      `http://bapful.sjnam.site/api/locations?lat=${currentLocation?.latitude}&lng=${currentLocation?.longitude}&radius=2000`
     );
     const data = await response.json();
 
-    // Map data to KakaoMapPlace[]
-    console.log(data.documents);
-    const places = data.documents.map((place: any) =>
-      Place.fromKakaoAPIResponse(place)
+    const places = data.map((place: any) =>
+      Place.fromAPIResponse(place)
     );
-    console.log(places);
     setPlaces(places);
   };
 
