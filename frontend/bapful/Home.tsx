@@ -27,6 +27,7 @@ export default function Home({ onShowRecommendations }: HomeProps) {
     null
   );
   const [showPlaceDetail, setShowPlaceDetail] = useState<boolean>(false);
+  const [showAllReviews, setShowAllReviews] = useState<boolean>(false);
 
   const [searchKeyword, setSearchKeyword] = useState<string>("");
   const [searchedPlaces, setSearchedPlaces] = useState<Place[]>([]);
@@ -79,15 +80,41 @@ export default function Home({ onShowRecommendations }: HomeProps) {
 
     // Map data to KakaoMapPlace[]
     console.log(data.documents);
-    const places = data.documents.map((place: any) =>
-      Place.fromKakaoAPIResponse(place)
-    );
+    const places = data.documents.map((place: any) => {
+      const mappedPlace = Place.fromKakaoAPIResponse(place);
+      // Add sample reviews for demonstration
+      mappedPlace.reviews = [
+        {
+          user: "김민수",
+          comment: "정말 맛있는 곳이에요!",
+          rating: 5,
+          date: "2024.08.20"
+        },
+        {
+          user: "이영희", 
+          comment: "인생맛집 발견!",
+          rating: 4,
+          date: "2024.08.18"
+        }
+      ];
+      return mappedPlace;
+    });
     console.log(places);
     setPlaces(places);
   };
 
   const handlePlaceClick = (place: Place) => {
     setSelectedPlace(place);
+    setShowPlaceDetail(true);
+  };
+
+  const handleShowAllReviews = () => {
+    setShowPlaceDetail(false);
+    setShowAllReviews(true);
+  };
+
+  const handleBackFromReviews = () => {
+    setShowAllReviews(false);
     setShowPlaceDetail(true);
   };
 
@@ -128,8 +155,18 @@ export default function Home({ onShowRecommendations }: HomeProps) {
         >
           {/* <PlaceReview place={selectedPlace!} /> */}
           <View style={styles.placePreviewContainer}>
-            <PlacePreview place={selectedPlace!} />
+            <PlacePreview place={selectedPlace!} onShowAllReviews={handleShowAllReviews} />
           </View>
+        </SlideUpModal>
+
+        {/* All Reviews Modal */}
+        <SlideUpModal
+          visible={showAllReviews}
+          onClose={() => setShowAllReviews(false)}
+          backgroundColor={colors.secondaryColor}
+          backdropOpacity={0.3}
+        >
+          <PlaceReview place={selectedPlace!} onBack={handleBackFromReviews} />
         </SlideUpModal>
 
         {/* Search Result Modal */}
