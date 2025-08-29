@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from .config import settings
 from .database import engine, Base
-from .routes import auth, locations, menus, heatmap
+from .routes import auth, locations, menus, heatmap, chat
 
 # Configure logging
 logging.basicConfig(
@@ -45,6 +45,7 @@ app.include_router(auth.router)
 app.include_router(locations.router)
 app.include_router(menus.router)
 app.include_router(heatmap.router)
+app.include_router(chat.router)
 
 # Serve uploaded files
 app.mount("/uploads", StaticFiles(directory=settings.uploadsDir), name="uploads")

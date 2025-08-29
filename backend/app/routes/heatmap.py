@@ -70,6 +70,12 @@ class HeatmapManager:
 
 heatmap_manager = HeatmapManager()
 
+@router.websocket("/ws")
+async def getHeatmap(
+  websocket: WebSocket,
+  ):
+  await heatmap_manager.connect(websocket)
+
 # websocket test code
 # html = """
 # <!DOCTYPE html>
@@ -158,9 +164,3 @@ heatmap_manager = HeatmapManager()
 # @router.get("")
 # async def getWSPage():
 #   return HTMLResponse(content=html)
-
-@router.websocket("/ws")
-async def getHeatmap(
-  websocket: WebSocket,
-  ):
-  await heatmap_manager.connect(websocket)
