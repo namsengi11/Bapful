@@ -20,6 +20,7 @@ export default function UserProfile() {
 
     const [selectedFoodImages, setSelectedFoodImages] = useState<any[]>([foodImages[0], foodImages[1], foodImages[2], foodImages[3], foodImages[4]]);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [profileMessage, setProfileMessage] = useState("Welcome to my food journey!");
     
     const toggleProfileEdit = () => {
         setIsEditingProfile(!isEditingProfile);
@@ -30,6 +31,9 @@ export default function UserProfile() {
             <Image source={require('./assets/bapsang.jpg')} style={styles.backgroundImage} />
             <View style={styles.userProfileListContainer}>
                 <UserProfileList users={[]} />
+            </View>
+            <View style={styles.profileMessageContainer}>
+                <Text style={styles.profileMessageText}>{profileMessage}</Text>
             </View>
             {foodCoordinates.map((coordinate, index) => (
                 <View key={index} style={[styles.foodCoordinate, { left: coordinate[0], top: coordinate[1] }]}>
@@ -44,7 +48,7 @@ export default function UserProfile() {
             <TouchableOpacity style={styles.editProfileButton} onPress={toggleProfileEdit}>
                 <Text style={styles.editProfileButtonText}>Edit Profile</Text>
             </TouchableOpacity>
-            {isEditingProfile && <ProfileEdit />}
+            {isEditingProfile && <ProfileEdit toggleProfileEdit={toggleProfileEdit} profileMessage={profileMessage} setProfileMessage={setProfileMessage} foodImages={foodImages} />}
         </View>
         
     )
@@ -91,6 +95,22 @@ const styles = StyleSheet.create({
         color: colors.white,
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    profileMessageContainer: {
+        position: 'absolute',
+        top: '15%',
+        left: '10%',
+        right: '10%',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        padding: 15,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    profileMessageText: {
+        fontSize: 16,
+        color: colors.gray,
+        textAlign: 'center',
+        fontWeight: '500',
     },
     foodCoordinate: {
         position: 'absolute',

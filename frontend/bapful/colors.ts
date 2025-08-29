@@ -4,5 +4,6 @@ export default {
   tertiaryColor: "#DFBF91",
   brightBorder: "#9E4F04",
   gray: "#BBB5B5",
+  black: "#000000",
   white: "#FFFFFF"
 }
