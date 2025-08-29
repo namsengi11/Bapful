@@ -14,6 +14,7 @@ import Searchbar from "./Searchbar";
 import PlaceResultPage from "./PlaceResultPage";
 import PlacePreview from "./PlacePreview";
 import { Place } from "./Place";
+import UserProfile from "./userProfile";
 
 export default function Home() {
   const [currentLocation, setCurrentLocation] = useState<{
@@ -29,6 +30,7 @@ export default function Home() {
   const [searchKeyword, setSearchKeyword] = useState<string>("");
   const [searchedPlaces, setSearchedPlaces] = useState<Place[]>([]);
   const [showPlaceResultPage, setShowPlaceResultPage] = useState<boolean>(false);
+  const [showUserProfile, setShowUserProfile] = useState<boolean>(false);
 
   const map_rest_api_key = process.env.EXPO_PUBLIC_REST_API_KEY;
 
@@ -43,6 +45,11 @@ export default function Home() {
   useEffect(() => {
     setShowPlaceResultPage(true);
   }, [searchedPlaces, searchKeyword]);
+
+
+  const toggleUserProfile = () => {
+    setShowUserProfile(!showUserProfile);
+  }
 
   const getCurrentLocation = async () => {
     const { status } = await requestForegroundPermissionsAsync();
@@ -95,10 +102,7 @@ export default function Home() {
     <SafeAreaView style={styles.safeAreaView}>
       <View style={styles.container}>
         <View style={styles.topBannerContainer}>
-          <TopBanner />
-        </View>
-        <View style={styles.searchBarContainer}>
-          <Searchbar setSearchedPlaces={setSearchedPlaces} setSearchKeyword={setSearchKeyword} />
+          <TopBanner toggleUserProfile={toggleUserProfile}/>
         </View>
         <View style={styles.mapContainer}>
           {currentLocation ? (
@@ -112,30 +116,42 @@ export default function Home() {
             <Text>위치를 가져오는 중입니다...</Text>
           )}
         </View>
+        <View style={styles.searchBarContainer}>
+          <Searchbar setSearchedPlaces={setSearchedPlaces} setSearchKeyword={setSearchKeyword} />
+        </View>
 
       </View>
-        {/* Place Detail Modal */}
-        <SlideUpModal
-          visible={showPlaceDetail}
-          onClose={() => setShowPlaceDetail(false)}
-          backgroundColor={colors.secondaryColor} // Optional: default is white
-          backdropOpacity={0} // Optional: default is 0.5
-        >
-          {/* <PlaceReview place={selectedPlace!} /> */}
-          <View style={styles.placePreviewContainer}>
-            <PlacePreview place={selectedPlace!} />
-          </View>
-        </SlideUpModal>
+      
+   
+      
+      {showUserProfile && 
+        <View style={styles.userProfileContainer}>
+          <UserProfile />
+        </View>
+      }
 
-        {/* Search Result Modal */}
-        <SlideUpModal
-          visible={showPlaceResultPage}
-          onClose={() => setShowPlaceResultPage(false)}
-          backgroundColor={colors.secondaryColor} // Optional: default is white
-          backdropOpacity={0.3} // Optional: default is 0.5
-        >
-          <PlaceResultPage searchKeyword={searchKeyword} searchedPlaces={searchedPlaces} />
-        </SlideUpModal>
+        {/* Place Detail Modal */}
+      <SlideUpModal
+        visible={showPlaceDetail}
+        onClose={() => setShowPlaceDetail(false)}
+        backgroundColor={colors.secondaryColor} // Optional: default is white
+        backdropOpacity={0} // Optional: default is 0.5
+      >
+        {/* <PlaceReview place={selectedPlace!} /> */}
+        <View style={styles.placePreviewContainer}>
+          <PlacePreview place={selectedPlace!} />
+        </View>
+      </SlideUpModal>
+
+      {/* Search Result Modal */}
+      <SlideUpModal
+        visible={showPlaceResultPage}
+        onClose={() => setShowPlaceResultPage(false)}
+        backgroundColor={colors.secondaryColor} // Optional: default is white
+        backdropOpacity={0.3} // Optional: default is 0.5
+      >
+        <PlaceResultPage searchKeyword={searchKeyword} searchedPlaces={searchedPlaces} />
+      </SlideUpModal>
 
     </SafeAreaView>
   );
@@ -155,7 +171,11 @@ const styles = StyleSheet.create({
     flex: 8,
   },
   topBannerContainer: {
+    position: "absolute",
+    zIndex: 1000,
+    top: 0,
     width: "100%",
+    height: Dimensions.get("window").height * 0.10,
     flex: 1,
   },
   searchBarContainer: {
@@ -163,11 +183,18 @@ const styles = StyleSheet.create({
     top: Dimensions.get("window").height * 0.15,
     width: "80%",
     height: 50,
-
-    zIndex: 1000,
   },
   placePreviewContainer: {
     width: "100%",
     height: Dimensions.get("window").height * 0.3,
+  },
+  userProfileContainer: {
+    flex: 1,
+    position: "absolute",
+    top: Dimensions.get("window").height * 0.10,
+    width: "100%",
+    height: Dimensions.get("window").height * 0.90,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

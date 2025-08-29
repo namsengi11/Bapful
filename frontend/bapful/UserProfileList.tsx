@@ -27,6 +27,44 @@ export default function UserProfileList({
     }
   };
 
+  const sampleUsers = [
+    new Reviewer({
+      id: 1,
+      name: "김민수",
+      profileImage: "https://i.pravatar.cc/100?img=1",
+      review: "사장님이 맛있고 음식이 친절해요",
+    }),
+    new Reviewer({
+      id: 2,
+      name: "이영희",
+      profileImage: "https://i.pravatar.cc/100?img=2",
+      review: "인생맛집이에요",
+    }),
+    new Reviewer({
+      id: 3,
+      name: "박철수",
+      profileImage: "https://i.pravatar.cc/100?img=3",
+      review: "사장님이 맛있고 음식이 친절해요",
+    }),
+    new Reviewer({
+      id: 4,
+      name: "정수연",
+      profileImage: "https://i.pravatar.cc/100?img=4",
+      review: "인생맛집이에요",
+    }),
+    new Reviewer({
+      id: 5,
+      name: "최동훈",
+      profileImage: "https://i.pravatar.cc/100?img=5",
+      review: "인생맛집이에요",
+    }),
+  ];
+
+  if (users.length === 0) {
+    console.log("Mock up with sample users");
+    users = sampleUsers;
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView

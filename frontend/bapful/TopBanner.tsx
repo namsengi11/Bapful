@@ -1,8 +1,8 @@
-import {View, Text, StyleSheet, Image, Dimensions} from "react-native";
+import {View, Text, StyleSheet, Image, Dimensions, TouchableOpacity} from "react-native";
 
 import colors from "./colors";
 
-export default function TopBanner() {
+export default function TopBanner({toggleUserProfile}: {toggleUserProfile: () => void}) {
   return (
     <View style={styles.container}>
       <View style={styles.bapfulLogoContainer}>
@@ -10,7 +10,9 @@ export default function TopBanner() {
       </View>
       <Image source={require("./assets/chopstick_menu.png")} style={styles.chopstickMenu} />
       <View style={styles.userProfileContainer}>
-        <Image source={require("./assets/user.png")} style={styles.userProfile} />
+        <TouchableOpacity onPress={() => toggleUserProfile()}>
+          <Image source={require("./assets/user.png")} style={styles.userProfile} />
+        </TouchableOpacity>
       </View>
     </View>
   );

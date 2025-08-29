@@ -129,6 +129,8 @@ export default function SlideUpModal({
       transparent={true}
       animationType="none"
       onRequestClose={closeModal}
+      style={styles.modal}
+      statusBarTranslucent={true}
     >
       <View style={styles.container}>
         {/* Backdrop */}
@@ -172,8 +174,13 @@ export default function SlideUpModal({
 }
 
 const styles = StyleSheet.create({
+  modal: {
+    flex: 1,
+    overflow: 'hidden',
+  },
   container: {
     flex: 1,
+    overflow: 'hidden',
     justifyContent: "flex-end",
   },
   backdrop: {
@@ -213,6 +220,9 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingBottom: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    // overflow: 'hidden',
   },
   swipeZone: {
     position: 'absolute',
