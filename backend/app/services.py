@@ -25,12 +25,9 @@ def calculateDistance(lat1: float, lng1: float, lat2: float, lng2: float) -> flo
 
 class LocationService:
   """Service for location-related operations"""
-  # Keyword based search has auth issues
-  # tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/searchKeyword1?serviceKey={settings.tourAPIKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=51&signguCd=51130&keyword=음식&_type=json"
 
   # Use area based search for now
-  tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/areaBasedList1?serviceKey={settings.tourAPIKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=51&signguCd=51130&_type=json"
-
+  tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/areaBasedList1?serviceKey={settings.tourAPIKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=11&signguCd=11110&_type=json"
 
   kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json"
   kakaoAPIQuery = [
@@ -84,10 +81,13 @@ class LocationService:
     """Get locations from tour API"""
 
     # Logic to get area code for API from lat, lng
-
-    response = requests.get(LocationService.tourAPIUrl).json()['response']['body']['items']['item']
+    response = requests.get(LocationService.tourAPIUrl).json()
+    try:
+      items = response['response']['body']['items']['item']
+    except:
+      raise HTTPException(status_code=500, detail="Failed to get locations from tour API")
     result = []
-    for item in response:
+    for item in items:
       if item['rlteCtgryLclsNm'] != "음식":
         continue
       # Extract name and find coordinates
@@ -113,9 +113,9 @@ class LocationService:
     )
 
     result = [KakaoLocation.fromKakaoAPIResult(location) for location in response.json()["documents"]]
-    print(result)
+
     resultToLocationResponse = [LocationResponse.model_validate(location) for location in result]
-    print(resultToLocationResponse)
+
     return resultToLocationResponse
 
   @staticmethod
@@ -141,9 +141,8 @@ class LocationService:
     kakaoLocations = LocationService.getKakaoLocations(lat, lng, radius)
     tourAPILocations = LocationService.getTourAPILocations(lat, lng, radius)
 
-    # Async save result to db
+    # TODO: Async save result to db and use cache
     locations = locations + kakaoLocations + tourAPILocations
-    print(locations)
 
     return locations
 
