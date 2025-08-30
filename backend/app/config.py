@@ -11,7 +11,6 @@ class Settings(BaseSettings):
 
     SEED_DUMMY: bool = False  # 필요 시 .env 에 SEED_DUMMY=true
 
-<<<<<<< HEAD
     # JWT
     jwtSecretKey: str = secrets.token_urlsafe(32)
     jwtAlgorithm: str = "HS256"

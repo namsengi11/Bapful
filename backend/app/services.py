@@ -130,7 +130,6 @@ class LocationService:
 
   @staticmethod
   def getNearbyLocations(db: Session, lat: float, lng: float, radius: int = 1000) -> List[dict]:
-<<<<<<< HEAD
     """Get locations within radius with average ratings (simple in-Python filter)."""
     locations = db.query(Location).all()
     results: List[dict] = []
@@ -153,24 +152,6 @@ class LocationService:
           "review_count": review_count
         })
     return results
-=======
-    """Get locations within radius with average ratings"""
-    # Query the database for locations within radius
-    locations = db.query(Location).filter(
-      func.sqrt(
-        (Location.latitude - lat) * (Location.latitude - lat) + (Location.longitude - lng) * (Location.longitude - lng)
-      ) <= radius
-    ).all()
-
-    kakaoLocations = LocationService.getKakaoLocations(lat, lng, radius)
-    tourAPILocations = LocationService.getTourAPILocations(lat, lng, radius)
-
-    # Async save result to db
-    locations = locations + kakaoLocations + tourAPILocations
-    print(locations)
-
-    return locations
->>>>>>> upstream/main
 
   @staticmethod
   def getLocationReviews(
