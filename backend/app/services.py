@@ -130,11 +130,10 @@ class LocationService:
 
   @staticmethod
   def getNearbyLocations(db: Session, lat: float, lng: float, radius: int = 1000) -> List[dict]:
-    """Get locations within radius with average ratings"""
-    # Query the database for locations within radius (simple in-Python filter for SQLite)
+<<<<<<< HEAD
+    """Get locations within radius with average ratings (simple in-Python filter)."""
     locations = db.query(Location).all()
-    db_results: List[dict] = []
-    
+    results: List[dict] = []
     for loc in locations:
       distance = calculateDistance(lat, lng, loc.latitude, loc.longitude)
       if distance <= radius:
@@ -145,7 +144,7 @@ class LocationService:
           avg_rating = sum(r.rating for r in review_q) / review_count
         else:
           avg_rating = 0.0
-        db_results.append({
+        results.append({
           "id": loc.id,
           "name": loc.name,
           "location_type": loc.location_type,
@@ -153,16 +152,25 @@ class LocationService:
           "avg_rating": round(avg_rating, 2),
           "review_count": review_count
         })
+    return results
+=======
+    """Get locations within radius with average ratings"""
+    # Query the database for locations within radius
+    locations = db.query(Location).filter(
+      func.sqrt(
+        (Location.latitude - lat) * (Location.latitude - lat) + (Location.longitude - lng) * (Location.longitude - lng)
+      ) <= radius
+    ).all()
 
-    # Get external API locations
     kakaoLocations = LocationService.getKakaoLocations(lat, lng, radius)
     tourAPILocations = LocationService.getTourAPILocations(lat, lng, radius)
 
-    # Combine all results
-    all_locations = db_results + kakaoLocations + tourAPILocations
-    print(all_locations)
+    # Async save result to db
+    locations = locations + kakaoLocations + tourAPILocations
+    print(locations)
 
-    return all_locations
+    return locations
+>>>>>>> upstream/main
 
   @staticmethod
   def getLocationReviews(
