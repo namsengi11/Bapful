@@ -28,7 +28,7 @@ export default function KakaoMap({
       latitude: 37.4,
       longitude: 127.1,
       statusMessage: "I love food",
-      backgroundImage: "./assets/bapsang.jpg",
+      backgroundImage: "./assets/backgrounds/namsan_tower.png",
       foodImages: ["./assets/foods/bossam.png", "./assets/foods/japchae.png", "./assets/foods/samgyetang.png", "./assets/foods/soondubu.png", "./assets/foods/tbk.png"],
     }),
   ]
@@ -59,12 +59,33 @@ export default function KakaoMap({
               };
               const map = new kakao.maps.Map(mapContainer, mapOption);
 
+              // Map of corresponding pin image for place type
+              const placeTypeImageMap = {
+                '음식점': 'http://bapful.sjnam.site/static/restaurant.png',
+                '카페': 'http://bapful.sjnam.site/static/cafe.png',
+                '문화시설': 'http://bapful.sjnam.site/static/tourist_destination.png',
+                '쇼핑': 'http://bapful.sjnam.site/static/tourist_destination.png',
+                '관광지': 'http://bapful.sjnam.site/static/tourist_destination.png',
+              };
+
               ${places
                 .map(
                   (place, index) => `
+              // Load image source
+              // var imageSrc = './assets/pins/restaurant.png';
+              var imageSrc = placeTypeImageMap['${place.type}'] || 'http://bapful.sjnam.site/static/tourist_destination.png'
+              var imageSize = new kakao.maps.Size(85, 85);
+              // var imageOption = {offset: new kakao.maps.Point(27, 69)}; // Coordinate of marker image offset to origin on map
+      
+              // Create marker image
+              // var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+              var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+
+              // Create marker
               const marker${index} = new kakao.maps.Marker({
-                position: new kakao.maps.LatLng(${place.latitude}, ${place.longitude})
-              });
+                position: new kakao.maps.LatLng(${place.latitude}, ${place.longitude}),
+                image: markerImage
+                });
               marker${index}.setMap(map);
 
               const infoWindow${index} = new kakao.maps.InfoWindow({

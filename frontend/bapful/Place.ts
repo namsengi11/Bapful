@@ -18,6 +18,7 @@ export class Place {
     latitude: number;
     longitude: number;
     name: string;
+    type: string;
     address: string;
     description: string;
     rating: number;
@@ -44,6 +45,7 @@ export class Place {
       latitude: apiResponse.coordinates?.lat,
       longitude: apiResponse.coordinates?.lng,
       name: apiResponse.name,
+      type: apiResponse.location_type,
       address: apiResponse.address,
       description: apiResponse.description,
       rating: apiResponse.avg_rating,
@@ -56,6 +58,7 @@ export class Place {
       latitude: apiResponse.y,
       longitude: apiResponse.x,
       name: apiResponse.place_name,
+      type: apiResponse.category_group_name,
       address: apiResponse.address_name,
       description: "",
       rating: 0,

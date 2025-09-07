@@ -92,6 +92,7 @@ export default function Home() {
       Place.fromAPIResponse(place)
     );
     setPlaces(places);
+    console.log(places);
   };
   
   const handlePlaceClick = (place: Place) => {
@@ -110,7 +111,7 @@ export default function Home() {
     latitude: 37.4,
     longitude: 127.1,
     statusMessage: "I love food",
-    backgroundImage: "./assets/bapsang.jpg",
+    backgroundImage: "./assets/backgrounds/namsan_tower.png",
     foodImages: ["./assets/foods/bossam.png", "./assets/foods/japchae.png", "./assets/foods/samgyetang.png", "./assets/foods/soondubu.png", "./assets/foods/tbk.png"],
   });
 

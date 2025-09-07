@@ -30,7 +30,10 @@ export default function UserProfile({
     };
 
     const backgroundImageMap: { [key: string]: any } = {
-        './assets/bapsang.jpg': require('./assets/bapsang.jpg'),
+        './assets/backgrounds/namsan_tower.png': require('./assets/backgrounds/namsan_tower.png'),
+        './assets/backgrounds/palace.png': require('./assets/backgrounds/palace.png'),
+        './assets/backgrounds/hanok.png': require('./assets/backgrounds/hanok.png'),
+
     };
     
     const foodImages = user.foodImages.map((imagePath) => foodImageMap[imagePath]).filter(Boolean);
