@@ -2,12 +2,14 @@ import React, { useEffect } from "react";
 import { View, StyleSheet, Text, SafeAreaView, Dimensions } from "react-native";
 import { WebView } from "react-native-webview";
 import { Place } from "./Place";
+import { User } from "./User";
 
 type KakaoMapProps = {
   latitude: number;
   longitude: number;
   places: Place[];
   onPlaceClick: (place: Place) => void;
+  onUserClick: (user: User) => void;
 };
 
 export default function KakaoMap({
@@ -15,8 +17,21 @@ export default function KakaoMap({
   longitude,
   places,
   onPlaceClick,
+  onUserClick,
 }: KakaoMapProps) {
   const map_js_api_key = process.env.EXPO_PUBLIC_JS_API_KEY;
+
+  const dummyUsers = [
+    new User({
+      id: "1",
+      name: "김민수",
+      latitude: 37.4,
+      longitude: 127.1,
+      statusMessage: "I love food",
+      backgroundImage: "./assets/bapsang.jpg",
+      foodImages: ["./assets/foods/bossam.png", "./assets/foods/japchae.png", "./assets/foods/samgyetang.png", "./assets/foods/soondubu.png", "./assets/foods/tbk.png"],
+    }),
+  ]
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -66,6 +81,29 @@ export default function KakaoMap({
               `
                 )
                 .join("\n")}
+              
+              ${dummyUsers
+                .map(
+                  (user, index) => `
+              const marker${index+places.length} = new kakao.maps.Marker({
+                position: new kakao.maps.LatLng(${user.latitude}, ${user.longitude})
+              });
+              marker${index+places.length}.setMap(map);
+
+              const infoWindow${index+places.length} = new kakao.maps.InfoWindow({
+                content: ''
+              });
+
+              kakao.maps.event.addListener(marker${index+places.length}, 'click', function() {
+                infoWindow${index+places.length}.open(map, marker${index+places.length});
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                  type: 'USER_CLICK',
+                  user: ${JSON.stringify(user)}
+                }));
+              });
+                  `
+                )
+                .join("\n")}
             } else {
               console.error('Kakao Maps is not available');
             }
@@ -96,6 +134,9 @@ export default function KakaoMap({
             const message = JSON.parse(event.nativeEvent.data);
             if (message.type === "PLACE_CLICK" && message.place) {
               onPlaceClick(message.place);
+            }
+            if (message.type === "USER_CLICK" && message.user) {
+              onUserClick(message.user);
             }
           } catch (error) {
             // Handle non-JSON messages  (like console.log messages)

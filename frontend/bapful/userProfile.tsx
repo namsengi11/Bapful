@@ -2,38 +2,62 @@ import { Image, StyleSheet, Text, TouchableOpacity, View, DimensionValue, Dimens
 import { useState, useEffect } from "react";
 
 import UserProfileList from "./UserProfileList";
-import ProfileEdit from "./profileEdit";
+import ProfileEdit from "./ProfileEdit";
+import Chat from "./Chat";
 import colors from "./colors";
+import { User } from "./User";
 
-export default function UserProfile() {
+type UserProfileProps = {
+    myProfile: Boolean;
+    user: User;
+}
+
+export default function UserProfile({
+        myProfile,
+        user,
+    }: UserProfileProps
+) {
     const foodCoordinates: Array<[DimensionValue, DimensionValue]> = [['15%', '62%'], ['50%', '62%'], ['0%', '75%'], ['33%', '75%'], ['65%', '75%']];
 
-    // Available food images
-    const foodImages = [
-        require('./assets/foods/bossam.png'),
-        require('./assets/foods/japchae.png'),
-        require('./assets/foods/samgyetang.png'),
-        require('./assets/foods/soondubu.png'),
-        require('./assets/foods/tbk.png'),
-        require('./assets/foods/yukheue.png'),
-    ];
+    // Available food images - create a mapping for dynamic imports
+    const foodImageMap: { [key: string]: any } = {
+        './assets/foods/bossam.png': require('./assets/foods/bossam.png'),
+        './assets/foods/japchae.png': require('./assets/foods/japchae.png'),
+        './assets/foods/samgyetang.png': require('./assets/foods/samgyetang.png'),
+        './assets/foods/soondubu.png': require('./assets/foods/soondubu.png'),
+        './assets/foods/tbk.png': require('./assets/foods/tbk.png'),
+        './assets/foods/yukheue.png': require('./assets/foods/yukheue.png'),
+    };
+
+    const backgroundImageMap: { [key: string]: any } = {
+        './assets/bapsang.jpg': require('./assets/bapsang.jpg'),
+    };
+    
+    const foodImages = user.foodImages.map((imagePath) => foodImageMap[imagePath]).filter(Boolean);
+    const backgroundImage = backgroundImageMap[user.backgroundImage];
 
     const [selectedFoodImages, setSelectedFoodImages] = useState<any[]>([foodImages[0], foodImages[1], foodImages[2], foodImages[3], foodImages[4]]);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [profileMessage, setProfileMessage] = useState("Welcome to my food journey!");
-    
+    const [isChatting, setIsChatting] = useState(false);
+
     const toggleProfileEdit = () => {
         setIsEditingProfile(!isEditingProfile);
     }
 
+    const toggleChat = () => {
+        setIsChatting(!isChatting);
+        console.log(isChatting);
+    }
+
     return (
         <View style={styles.container}>
-            <Image source={require('./assets/bapsang.jpg')} style={styles.backgroundImage} />
+            <Image source={backgroundImage} style={styles.backgroundImage} />
             <View style={styles.userProfileListContainer}>
                 <UserProfileList users={[]} />
             </View>
             <View style={styles.profileMessageContainer}>
-                <Text style={styles.profileMessageText}>{profileMessage}</Text>
+                <Text style={styles.profileMessageText}>{user.statusMessage}</Text>
             </View>
             {foodCoordinates.map((coordinate, index) => (
                 <View key={index} style={[styles.foodCoordinate, { left: coordinate[0], top: coordinate[1] }]}>
@@ -45,10 +69,31 @@ export default function UserProfile() {
                     )}
                 </View>
             ))}
+            {myProfile && (
             <TouchableOpacity style={styles.editProfileButton} onPress={toggleProfileEdit}>
                 <Text style={styles.editProfileButtonText}>Edit Profile</Text>
             </TouchableOpacity>
-            {isEditingProfile && <ProfileEdit toggleProfileEdit={toggleProfileEdit} profileMessage={profileMessage} setProfileMessage={setProfileMessage} foodImages={foodImages} />}
+            )}
+            {!myProfile && (
+            <TouchableOpacity style={styles.editProfileButton} onPress={toggleChat}>
+                <Text style={styles.editProfileButtonText}>Chat</Text>
+            </TouchableOpacity>
+            )}
+            {myProfile && isEditingProfile && <ProfileEdit 
+                toggleProfileEdit={toggleProfileEdit} 
+                profileMessage={profileMessage} 
+                setProfileMessage={setProfileMessage} 
+                selectedFoodImages={selectedFoodImages} 
+                foodImages={foodImages} 
+                setSelectedFoodImages={setSelectedFoodImages} 
+            />}
+            {!myProfile && isChatting && (
+                <Chat 
+                    recipientName={user.name}
+                    backgroundImage={backgroundImage}
+                    onClose={toggleChat}
+                />
+            )}
         </View>
         
     )

@@ -13,8 +13,9 @@ import colors from "./colors";
 import Searchbar from "./Searchbar";
 import PlaceResultPage from "./PlaceResultPage";
 import PlacePreview from "./PlacePreview";
+import UserProfile from "./UserProfile";
 import { Place } from "./Place";
-import UserProfile from "./userProfile";
+import { User } from "./User";
 
 export default function Home() {
   const [currentLocation, setCurrentLocation] = useState<{
@@ -26,11 +27,14 @@ export default function Home() {
     null
   );
   const [showPlaceDetail, setShowPlaceDetail] = useState<boolean>(false);
-
+  
   const [searchKeyword, setSearchKeyword] = useState<string>("");
   const [searchedPlaces, setSearchedPlaces] = useState<Place[]>([]);
   const [showPlaceResultPage, setShowPlaceResultPage] = useState<boolean>(false);
+  
   const [showUserProfile, setShowUserProfile] = useState<boolean>(false);
+  const [showMyProfile, setShowMyProfile] = useState<boolean>(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const map_rest_api_key = process.env.EXPO_PUBLIC_REST_API_KEY;
 
@@ -47,8 +51,15 @@ export default function Home() {
   }, [searchedPlaces, searchKeyword]);
 
 
+  const backToHome = () => {
+    setShowMyProfile(false);
+    setShowUserProfile(false);
+    setShowPlaceDetail(false);
+    setShowPlaceResultPage(false);
+  }
+  
   const toggleUserProfile = () => {
-    setShowUserProfile(!showUserProfile);
+    setShowMyProfile(!showMyProfile);
   }
 
   const getCurrentLocation = async () => {
@@ -72,16 +83,6 @@ export default function Home() {
   };
 
   const getNearbyTourism = async () => {
-    // const response = await fetch(
-    //   `https://dapi.kakao.com/v2/local/search/keyword.json?query=관광지&x=${currentLocation?.longitude}&y=${currentLocation?.latitude}&radius=2000`,
-    //   {
-    //     headers: {
-    //       Authorization: `KakaoAK ${map_rest_api_key}`,
-    //     },
-    //   }
-    // );
-    // const data = await response.json();
-
     const response = await fetch(
       `http://bapful.sjnam.site/api/locations?lat=${currentLocation?.latitude}&lng=${currentLocation?.longitude}&radius=2000`
     );
@@ -92,17 +93,32 @@ export default function Home() {
     );
     setPlaces(places);
   };
-
+  
   const handlePlaceClick = (place: Place) => {
     setSelectedPlace(place);
     setShowPlaceDetail(true);
   };
+  
+  const handleUserClick = (user: User) => {  
+    setSelectedUser(user);
+    setShowUserProfile(true);
+  };
+  
+  const myUserInfo = new User({
+    id: "1",
+    name: "김민수",
+    latitude: 37.4,
+    longitude: 127.1,
+    statusMessage: "I love food",
+    backgroundImage: "./assets/bapsang.jpg",
+    foodImages: ["./assets/foods/bossam.png", "./assets/foods/japchae.png", "./assets/foods/samgyetang.png", "./assets/foods/soondubu.png", "./assets/foods/tbk.png"],
+  });
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <View style={styles.container}>
         <View style={styles.topBannerContainer}>
-          <TopBanner toggleUserProfile={toggleUserProfile}/>
+          <TopBanner toggleUserProfile={toggleUserProfile} backToHome={backToHome}/>
         </View>
         <View style={styles.mapContainer}>
           {currentLocation ? (
@@ -111,6 +127,7 @@ export default function Home() {
               longitude={currentLocation.longitude}
               places={places}
               onPlaceClick={handlePlaceClick}
+              onUserClick={handleUserClick}
             />
           ) : (
             <Text>위치를 가져오는 중입니다...</Text>
@@ -124,24 +141,33 @@ export default function Home() {
       
    
       
-      {showUserProfile && 
+
+      {showMyProfile && 
         <View style={styles.userProfileContainer}>
-          <UserProfile />
+          <UserProfile myProfile={true} user={myUserInfo} />
         </View>
       }
 
+      {showUserProfile && 
+        <View style={styles.userProfileContainer}>
+          <UserProfile myProfile={false} user={selectedUser!} />
+        </View>
+      }
+
+      
+
         {/* Place Detail Modal */}
-      <SlideUpModal
+      {/* <SlideUpModal
         visible={showPlaceDetail}
         onClose={() => setShowPlaceDetail(false)}
         backgroundColor={colors.secondaryColor} // Optional: default is white
         backdropOpacity={0} // Optional: default is 0.5
-      >
+      > */}
         {/* <PlaceReview place={selectedPlace!} /> */}
-        <View style={styles.placePreviewContainer}>
+        {/* <View style={styles.placePreviewContainer}>
           <PlacePreview place={selectedPlace!} />
         </View>
-      </SlideUpModal>
+      </SlideUpModal> */}
 
       {/* Search Result Modal */}
       <SlideUpModal
