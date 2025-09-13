@@ -208,7 +208,12 @@ class LocationService:
   ) -> List[dict]:
     """Search for locations"""
     db_results: List[dict] = []
-    query_results = db.query(Location).filter(Location.name.ilike(f"%{keyword}%")).all()
+    try:
+      query_results = db.query(Location).filter(Location.name.ilike(f"%{keyword}%")).all()
+    except Exception as e:
+      # No results in internal db
+      continue
+
     for loc in query_results:
       review_q = db.query(Review).filter(Review.locationId == loc.id)
       review_count = review_q.count()
