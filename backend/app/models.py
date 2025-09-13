@@ -19,8 +19,8 @@ class User(Base):
   # Relationships
   reviews = relationship("Review", back_populates="user")
   reviewRatings = relationship("ReviewRating", back_populates="user")
-  chatParticipants = relationship("ChatParticipant", back_populates="user")
-  chatMessages = relationship("ChatMessage", back_populates="user")
+  chats = relationship("ChatParticipant", back_populates="user")
+  messages = relationship("ChatMessage", back_populates="user")
   # lastLogin = relationship("LastLogin", back_populates="user")
 
 class Location(Base):

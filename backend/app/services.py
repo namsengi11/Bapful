@@ -104,9 +104,9 @@ class LocationService:
     return resultToLocationResponse
 
   @staticmethod
-  def getKakaoLocations(lat: float, lng: float, radius: int = 1000) -> List[dict]:
+  def getKakaoLocations(lat: float, lng: float, radius: int = 1000, query: str = "음식") -> List[dict]:
     """Get locations from Kakao API"""
-    queryUrl = LocationService.kakaoAPIUrl + LocationService.kakaoAPIQuery[0] + "음식" + LocationService.kakaoAPIQuery[1] + str(lat) + LocationService.kakaoAPIQuery[2] + str(radius)
+    queryUrl = LocationService.kakaoAPIUrl + LocationService.kakaoAPIQuery[0] + query + LocationService.kakaoAPIQuery[1] + str(lat) + LocationService.kakaoAPIQuery[2] + str(radius)
     response = requests.get(
       queryUrl,
       headers={"Authorization": f"KakaoAK {settings.kakaomap_restapi_key}"}
@@ -198,6 +198,33 @@ class LocationService:
       })
 
     return result
+
+  @staticmethod
+  def searchLocations(
+    db: Session,
+    keyword: str,
+    lat: float,
+    lng: float
+  ) -> List[dict]:
+    """Search for locations"""
+    db_results: List[dict] = []
+    query_results = db.query(Location).filter(Location.name.ilike(f"%{keyword}%")).all()
+    for loc in query_results:
+      review_q = db.query(Review).filter(Review.locationId == loc.id)
+      review_count = review_q.count()
+      if review_count:
+        avg_rating = sum(r.rating for r in review_q) / review_count
+      db_results.append({
+            "id": loc.id,
+            "name": loc.name,
+            "location_type": loc.location_type,
+            "coordinates": {"lat": loc.latitude, "lng": loc.longitude},
+            "avg_rating": round(avg_rating, 2),
+            "review_count": review_count
+      })
+    kakao_result = LocationService.getKakaoLocations(lat, lng, 1000, keyword)
+    all_results = db_results + kakao_result
+    return all_results
 
 class ReviewService:
   """Service for review-related operations"""
