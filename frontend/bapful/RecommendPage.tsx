@@ -1,54 +1,142 @@
 // RecommendPage.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
+  ActivityIndicator,
+  StyleSheet,
   ScrollView,
   TouchableOpacity,
   Image,
   Modal,
-  StyleSheet,
-  ActivityIndicator,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
-import { KakaoMapPlace } from './Kakaomap_place';
+import * as Location from 'expo-location';
+import { getRecommendations, RecommendationSection, API_BASE_URL, healthCheck } from './api';
 import PlaceReview from './PlaceReview';
+import { Place } from './Place';
 
 type CategoryData = {
   category: string;
-  items: KakaoMapPlace[];
+  items: Place[];
 };
 
-const RecommendPage = () => {
+interface RecommendPageProps { onBack?: () => void }
+
+const RecommendPage = ({ onBack }: RecommendPageProps) => {
   const [data, setData] = useState<CategoryData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPlace, setSelectedPlace] = useState<KakaoMapPlace | null>(null);
+  const [locLoading, setLocLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [coords, setCoords] = useState<{lat:number; lng:number} | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const { t } = useTranslation();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get('백엔드 api 주소');
-        const formattedData = res.data.map((section: any) => ({
-          category: section.category,
-          items: section.items.map((item: any) => KakaoMapPlace.fromApiResponse(item)),
-        }));
-        setData(formattedData);
-      } catch (e) {
-        console.error('API fetch error:', e);
-      } finally {
-        setLoading(false);
+  const requestLocation = useCallback(async () => {
+    setLocLoading(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setCoords(null); // 위치 없이 추천
+      } else {
+        const pos = await Location.getCurrentPositionAsync({});
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
       }
-    };
-
-    fetchData();
+    } catch {
+      setCoords(null);
+    } finally {
+      setLocLoading(false);
+    }
   }, []);
 
-  if (loading) {
-    return <ActivityIndicator size="large" style={{ flex: 1 }} />;
-  }
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // 헬스 체크(실패해도 계속 진행)
+      try { await healthCheck(); } catch {}
+      const sections: RecommendationSection[] = await getRecommendations({ lat: coords?.lat, lng: coords?.lng });
+      const formattedData = sections.map(section => ({
+        category: section.category,
+        items: section.items.map(item => Place.fromRecommendationItem(item)),
+      }));
+      setData(formattedData);
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || e?.message || 'API fetch error');
+    } finally {
+      setLoading(false);
+    }
+  }, [coords]);
+
+  useEffect(() => {
+    requestLocation();
+  }, [requestLocation]);
+
+  useEffect(() => {
+    // 위치 요청이 끝난 뒤 추천 로드
+    if (!locLoading) {
+      loadData();
+    }
+  }, [locLoading, loadData]);
+
+  const retry = () => {
+    requestLocation();
+  };
+
+  const content = () => {
+    if (loading) {
+      return (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#8B5E2B" />
+          <Text style={styles.hint}>추천 불러오는 중...</Text>
+        </View>
+      );
+    }
+    if (error) {
+      return (
+        <View style={styles.center}>
+          <Text style={styles.error}>{error}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={retry}>
+            <Text style={styles.retryTxt}>다시 시도</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    if (!data.length) {
+      return (
+        <View style={styles.center}>
+          <Text style={styles.hint}>추천 데이터가 없습니다.</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={retry}>
+            <Text style={styles.retryTxt}>새로고침</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return (
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {data.map((section, index) => (
+          <View key={index} style={styles.section}>
+            <Text style={styles.sectionTitle}>{t(section.category)}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {section.items.map((place) => (
+                <TouchableOpacity
+                  key={`${place.latitude}-${place.longitude}`}
+                  style={styles.imageBox}
+                  onPress={() => setSelectedPlace(place)}
+                >
+                  {/* Placeholder image handling; adjust field names based on backend response */}
+                  <Image source={{ uri: place.images?.[0] || 'https://via.placeholder.com/100' }} style={styles.image} />
+                  <Text style={styles.placeName}>{place.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        ))}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -56,31 +144,19 @@ const RecommendPage = () => {
       <View style={styles.header}>
         <Text style={styles.title}>{t('user_profile_title')} (매운맛 중독자)</Text>
         <View style={styles.headerButtons}>
-          <TouchableOpacity style={styles.redBtn} onPress={() => {/* navigation.navigate('UserProfile') */}} />
-          <TouchableOpacity style={styles.orangeBtn} disabled />
+          {onBack && (
+            <TouchableOpacity style={styles.backBtn} onPress={onBack}>
+              <Text style={{color:'#fff'}}>뒤로</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
-
-      {/* 유저 성향별 추천 리스트 */}
-      <ScrollView>
-        {data.map((section, index) => (
-          <View key={index} style={styles.section}>
-            <Text style={styles.sectionTitle}>{t(section.category)}</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {section.items.map((place) => (
-                <TouchableOpacity
-                  key={`${place.x}-${place.y}`}
-                  style={styles.imageBox}
-                  onPress={() => setSelectedPlace(place)}
-                >
-                  <Image source={{ uri: place.place_url }} style={styles.image} />
-                  <Text style={styles.placeName}>{place.place_name}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        ))}
-      </ScrollView>
+      {locLoading && (
+        <View style={styles.locBanner}>
+          <Text style={styles.locText}>위치 확인 중...</Text>
+        </View>
+      )}
+      {content()}
 
       {/* 모달 상세 보기 */}
       <Modal visible={!!selectedPlace} transparent animationType="slide">
@@ -97,18 +173,57 @@ const RecommendPage = () => {
   );
 };
 
+function labelForCategory(key: string) {
+  switch (key) {
+    case 'popular': return '인기';
+    case 'top_rated': return '높은 평점';
+    case 'nearby': return '주변';
+    case 'new': return 'NEW';
+    default: return key;
+  }
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#fff' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { fontSize: 16, fontWeight: 'bold' },
-  headerButtons: { flexDirection: 'row' },
-  redBtn: { width: 20, height: 20, backgroundColor: 'red', marginLeft: 8 },
-  orangeBtn: { width: 20, height: 20, backgroundColor: 'orange', marginLeft: 8 },
-  section: { marginTop: 24 },
-  sectionTitle: { fontSize: 14, fontWeight: '600', marginBottom: 8 },
-  imageBox: { marginRight: 12, alignItems: 'center' },
-  image: { width: 100, height: 100, borderRadius: 8 },
-  placeName: { fontSize: 12, marginTop: 4 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 50,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    backgroundColor: '#E8D1A0'
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  backBtn: { paddingVertical: 4, paddingRight: 12 },
+  backTxt: { fontSize: 16, color: '#5A3A10' },
+  title: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: '700', color: '#5A3A10' },
+  locBanner: { backgroundColor: '#F5EAD3', padding: 8, alignItems: 'center' },
+  locText: { fontSize: 12, color: '#6A4B20' },
+  scroll: { padding: 16 },
+  section: { marginBottom: 24 },
+  sectionTitle: { fontSize: 17, fontWeight: '700', marginBottom: 8, color: '#4A3212' },
+  empty: { fontSize: 13, color: '#888' },
+  itemCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2
+  },
+  itemName: { fontSize: 15, fontWeight: '600', color: '#3A2810' },
+  meta: { marginTop: 4, fontSize: 12, color: '#6B6055' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+  hint: { marginTop: 12, fontSize: 14, color: '#555' },
+  error: { marginBottom: 16, fontSize: 14, color: '#B00020', textAlign: 'center' },
+  retryBtn: { backgroundColor: '#8B5E2B', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 24 },
+  retryTxt: { color: '#FFF', fontWeight: '600' },
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
@@ -127,6 +242,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
+  imageBox: { marginRight: 12, alignItems: 'center' },
+  image: { width: 100, height: 100, borderRadius: 8 },
+  placeName: { fontSize: 12, marginTop: 4 },
 });
 
 export default RecommendPage;

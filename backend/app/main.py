@@ -1,13 +1,16 @@
 import logging
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
 from .config import settings
-from .database import engine, Base
-from .routes import auth, locations, menus, heatmap, chat
+from .database import engine, Base, getDatabaseSession
+from .models import Location, Review, User
+from .auth import getPasswordHash
+from .routes import auth, locations, menus, heatmap, recommendations, chat
 
 # Configure logging
 logging.basicConfig(
@@ -40,12 +43,36 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
+# Seed dummy data if empty
+def seed_dummy_data(db: Session):
+  from .models import Location
+  if db.query(Location).first():
+    return
+  # Add minimal dummy data
+  loc = Location(
+    name="Demo Place",
+    location_type="restaurant",
+    latitude=37.5665,
+    longitude=126.9780,
+    address="Seoul",
+  )
+  db.add(loc)
+  db.commit()
+  logger.info("Seeded dummy location data")
+
+if settings.SEED_DUMMY:
+  with next(getDatabaseSession()) as _db:
+    seed_dummy_data(_db)
+
 # Include routers
-app.include_router(auth.router)
-app.include_router(locations.router)
-app.include_router(menus.router)
-app.include_router(heatmap.router)
-app.include_router(chat.router)
+
+
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(locations.router, prefix="/locations", tags=["locations"])
+app.include_router(menus.router, prefix="/menus", tags=["menus"])
+app.include_router(recommendations.router, prefix="/recommendations", tags=["recommendations"])
+app.include_router(heatmap.router, prefix="/heatmap", tags=["heatmap"])
+app.include_router(chat.router, prefix="/chat", tags=["chat"])
 
 # Serve uploaded files
 app.mount("/uploads", StaticFiles(directory=settings.uploadsDir), name="uploads")

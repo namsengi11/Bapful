@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView, Button, Dimensions } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, Button, Dimensions, TouchableOpacity } from "react-native";
 import {
   getCurrentPositionAsync,
   requestForegroundPermissionsAsync,
@@ -17,7 +17,9 @@ import UserProfile from "./UserProfile";
 import { Place } from "./Place";
 import { User } from "./User";
 
-export default function Home() {
+interface HomeProps { onShowRecommendations?: () => void }
+
+export default function Home({ onShowRecommendations }: HomeProps) {
   const [currentLocation, setCurrentLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -27,7 +29,8 @@ export default function Home() {
     null
   );
   const [showPlaceDetail, setShowPlaceDetail] = useState<boolean>(false);
-  
+  const [showAllReviews, setShowAllReviews] = useState<boolean>(false);
+
   const [searchKeyword, setSearchKeyword] = useState<string>("");
   const [searchedPlaces, setSearchedPlaces] = useState<Place[]>([]);
   const [showPlaceResultPage, setShowPlaceResultPage] = useState<boolean>(false);
@@ -88,11 +91,27 @@ export default function Home() {
     );
     const data = await response.json();
 
-    const places = data.map((place: any) =>
-      Place.fromAPIResponse(place)
-    );
+    const places = data.map((place: any) => {
+      const mappedPlace = Place.fromAPIResponse(place);
+      // Add sample reviews for demonstration
+      mappedPlace.reviews = [
+        {
+          user: "김민수",
+          comment: "정말 맛있는 곳이에요!",
+          rating: 5,
+          date: "2024.08.20"
+        },
+        {
+          user: "이영희", 
+          comment: "인생맛집 발견!",
+          rating: 4,
+          date: "2024.08.18"
+        }
+      ];
+      return mappedPlace;
+    });
+    
     setPlaces(places);
-    console.log(places);
   };
   
   const handlePlaceClick = (place: Place) => {
@@ -114,6 +133,16 @@ export default function Home() {
     backgroundImage: "./assets/backgrounds/namsan_tower.png",
     foodImages: ["./assets/foods/bossam.png", "./assets/foods/japchae.png", "./assets/foods/samgyetang.png", "./assets/foods/soondubu.png", "./assets/foods/tbk.png"],
   });
+
+  const handleShowAllReviews = () => {
+    setShowPlaceDetail(false);
+    setShowAllReviews(true);
+  };
+
+  const handleBackFromReviews = () => {
+    setShowAllReviews(false);
+    setShowPlaceDetail(true);
+  };
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
@@ -140,9 +169,6 @@ export default function Home() {
 
       </View>
       
-   
-      
-
       {showMyProfile && 
         <View style={styles.userProfileContainer}>
           <UserProfile myProfile={true} user={myUserInfo} />
@@ -155,21 +181,6 @@ export default function Home() {
         </View>
       }
 
-      
-
-        {/* Place Detail Modal */}
-      {/* <SlideUpModal
-        visible={showPlaceDetail}
-        onClose={() => setShowPlaceDetail(false)}
-        backgroundColor={colors.secondaryColor} // Optional: default is white
-        backdropOpacity={0} // Optional: default is 0.5
-      > */}
-        {/* <PlaceReview place={selectedPlace!} /> */}
-        {/* <View style={styles.placePreviewContainer}>
-          <PlacePreview place={selectedPlace!} />
-        </View>
-      </SlideUpModal> */}
-
       {/* Search Result Modal */}
       <SlideUpModal
         visible={showPlaceResultPage}
@@ -179,6 +190,37 @@ export default function Home() {
       >
         <PlaceResultPage searchKeyword={searchKeyword} searchedPlaces={searchedPlaces} />
       </SlideUpModal>
+      
+      {/* Recommendation Button */}
+      {onShowRecommendations && (
+        <TouchableOpacity style={styles.recommendButton} onPress={onShowRecommendations}>
+          <Text style={styles.recommendButtonText}>추천 보기</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Place Detail Modal */}
+      <SlideUpModal
+        visible={showPlaceDetail}
+        onClose={() => setShowPlaceDetail(false)}
+        backgroundColor={colors.secondaryColor} // Optional: default is white
+        backdropOpacity={0} // Optional: default is 0.5
+      >
+        {/* <PlaceReview place={selectedPlace!} /> */}
+        <View style={styles.placePreviewContainer}>
+          <PlacePreview place={selectedPlace!} onShowAllReviews={handleShowAllReviews} />
+        </View>
+      </SlideUpModal>
+
+      {/* All Reviews Modal */}
+      <SlideUpModal
+        visible={showAllReviews}
+        onClose={() => setShowAllReviews(false)}
+        backgroundColor={colors.secondaryColor}
+        backdropOpacity={0.3}
+      >
+        <PlaceReview place={selectedPlace!} onBack={handleBackFromReviews} />
+      </SlideUpModal>
+
 
     </SafeAreaView>
   );
@@ -224,4 +266,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  recommendButton: {
+    position: 'absolute',
+    bottom: 40,
+    right: 20,
+    backgroundColor: colors.primaryColor,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 24,
+    elevation: 4,
+  },
+  recommendButtonText: {
+    color: '#4a2d00',
+    fontWeight: '600'
+  }
 });

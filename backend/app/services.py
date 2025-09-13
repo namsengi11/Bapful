@@ -131,20 +131,38 @@ class LocationService:
   @staticmethod
   def getNearbyLocations(db: Session, lat: float, lng: float, radius: int = 1000) -> List[dict]:
     """Get locations within radius with average ratings"""
-    # Query the database for locations within radius
-    locations = db.query(Location).filter(
-      func.sqrt(
-        (Location.latitude - lat) * (Location.latitude - lat) + (Location.longitude - lng) * (Location.longitude - lng)
-      ) <= radius
-    ).all()
+    # Query the database for locations within radius (simple in-Python filter for SQLite)
+    locations = db.query(Location).all()
+    db_results: List[dict] = []
+    
+    for loc in locations:
+      distance = calculateDistance(lat, lng, loc.latitude, loc.longitude)
+      if distance <= radius:
+        # Aggregate rating (avg & count)
+        review_q = db.query(Review).filter(Review.locationId == loc.id)
+        review_count = review_q.count()
+        if review_count:
+          avg_rating = sum(r.rating for r in review_q) / review_count
+        else:
+          avg_rating = 0.0
+        db_results.append({
+          "id": loc.id,
+          "name": loc.name,
+          "location_type": loc.location_type,
+          "coordinates": {"lat": loc.latitude, "lng": loc.longitude},
+          "avg_rating": round(avg_rating, 2),
+          "review_count": review_count
+        })
 
+    # Get external API locations
     kakaoLocations = LocationService.getKakaoLocations(lat, lng, radius)
     tourAPILocations = LocationService.getTourAPILocations(lat, lng, radius)
 
-    # TODO: Async save result to db and use cache
-    locations = locations + kakaoLocations + tourAPILocations
+    # Combine all results
+    all_locations = db_results + kakaoLocations + tourAPILocations
+    print(all_locations)
 
-    return locations
+    return all_locations
 
   @staticmethod
   def getLocationReviews(
@@ -322,3 +340,79 @@ class MenuService:
       }
       for menu in menus
     ]
+
+class RecommendationService:
+  """Build recommendation sections using existing location & review data."""
+
+  @staticmethod
+  def getRecommendations(
+    db: Session,
+    lat: Optional[float] = None,
+    lng: Optional[float] = None,
+    per_category: int = 8
+  ) -> List[dict]:
+    # Base locations
+    all_locations = db.query(Location).all()
+    if not all_locations:
+      return []
+
+    # Pre-compute aggregates
+    aggregates = []
+    for loc in all_locations:
+      reviews = db.query(Review).filter(Review.locationId == loc.id).all()
+      review_count = len(reviews)
+      avg_rating = sum(r.rating for r in reviews)/review_count if review_count else 0.0
+      distance = None
+      if lat is not None and lng is not None:
+        distance = calculateDistance(lat, lng, loc.latitude, loc.longitude)
+      aggregates.append({
+        "id": loc.id,
+        "name": loc.name,
+        "location_type": loc.location_type,
+        "lat": loc.latitude,
+        "lng": loc.longitude,
+        "avg_rating": round(avg_rating,2),
+        "review_count": review_count,
+        "distance": distance
+      })
+
+    def section(name: str, items: List[dict]):
+      return {
+        "category": name,
+        "items": [
+          {
+            "location_id": it["id"],
+            "name": it["name"],
+            "location_type": it["location_type"],
+            "coordinates": {"lat": it["lat"], "lng": it["lng"]},
+            "avg_rating": it["avg_rating"],
+            "review_count": it["review_count"],
+            "distance": it["distance"],
+          }
+          for it in items[:per_category]
+        ]
+      }
+
+    # Popular (by review count)
+    popular = sorted(aggregates, key=lambda x: x["review_count"], reverse=True)
+    # Top rated (avg rating with minimum 1 review)
+    top_rated = sorted([a for a in aggregates if a["review_count"] > 0], key=lambda x: (x["avg_rating"], x["review_count"]), reverse=True)
+    # Nearby (if distance available)
+    nearby = []
+    if lat is not None and lng is not None:
+      nearby = sorted([a for a in aggregates if a["distance"] is not None], key=lambda x: x["distance"])
+    # New (recent createdAt) -- fall back to UUID order if createdAt not loaded
+    # For now reuse popular slice as placeholder or we could query ordering by createdAt.
+    new_list = popular  # Placeholder
+
+    sections: List[dict] = []
+    if popular:
+      sections.append(section("popular", popular))
+    if top_rated:
+      sections.append(section("top_rated", top_rated))
+    if nearby:
+      sections.append(section("nearby", nearby))
+    if new_list:
+      sections.append(section("new", new_list))
+
+    return sections

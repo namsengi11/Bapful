@@ -1,9 +1,9 @@
-import { View, Text, StyleSheet, Image, Dimensions } from "react-native";
+import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity } from "react-native";
 
 import { Place } from "./Place";
 import colors from "./colors";
 
-export default function PlacePreview({place}: {place: Place}) {
+export default function PlacePreview({place, onShowAllReviews}: {place: Place, onShowAllReviews?: () => void}) {
   return (
     <View style={styles.container}>
 
@@ -43,7 +43,13 @@ export default function PlacePreview({place}: {place: Place}) {
         </View>
         )}
 
-
+        {place.reviews.length > 0 && (
+          <TouchableOpacity style={styles.showAllReviewsButton} onPress={onShowAllReviews}>
+            <Text style={styles.showAllReviewsText}>
+              리뷰 {place.reviews.length}개 모두 보기 {'>'}
+            </Text>
+          </TouchableOpacity>
+        )}
 
       </View>
 
@@ -125,5 +131,18 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     marginLeft: 5,
+  },
+  showAllReviewsButton: {
+    alignSelf: 'center',
+    marginTop: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: colors.primaryColor,
+    borderRadius: 20,
+  },
+  showAllReviewsText: {
+    fontSize: 14,
+    color: '#4a2d00',
+    fontWeight: 'bold',
   },
 });
