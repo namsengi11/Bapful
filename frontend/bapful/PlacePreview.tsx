@@ -13,8 +13,10 @@ export default function PlacePreview({place, onShowAllReviews}: {place: Place, o
           <Text style={styles.titleText}>{place.name}</Text>
         </View>
         <Image source={require("./assets/spoon_rating.png")} style={styles.placeRatingImage} />
-        <Text style={styles.bodyText}>{place.rating}</Text>
-        <Text style={styles.bodyText}> ({place.ratingCount})</Text>
+        <Text style={styles.bodyText}>{
+          place.rating ? place.rating : "No Review"
+        }</Text>
+        <Text style={styles.bodyText}> {place.ratingCount ? "(" + place.ratingCount + ")" : ""}</Text>
       </View>
 
       <View style={styles.descriptionContainer}>
@@ -59,12 +61,12 @@ export default function PlacePreview({place, onShowAllReviews}: {place: Place, o
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     flexDirection: "column",
     justifyContent: "flex-start",
     alignItems: "flex-start",
     width: "100%",
-    height: "100%",
+    height: Dimensions.get("window").height * 0.4,
     padding: 16,
   },
   titleContainer: {
@@ -76,7 +78,7 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   descriptionContainer: {
-    flex: 1,
+    flex: 0.7,
     justifyContent: "flex-start",
     alignItems: "flex-start",
     width: "100%",

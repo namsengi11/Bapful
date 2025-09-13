@@ -17,15 +17,10 @@ import { getRecommendations, RecommendationSection, API_BASE_URL, healthCheck } 
 import PlaceReview from './PlaceReview';
 import { Place } from './Place';
 
-type CategoryData = {
-  category: string;
-  items: Place[];
-};
-
 interface RecommendPageProps { onBack?: () => void }
 
 const RecommendPage = ({ onBack }: RecommendPageProps) => {
-  const [data, setData] = useState<CategoryData[]>([]);
+  const [data, setData] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
   const [locLoading, setLocLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,13 +49,11 @@ const RecommendPage = ({ onBack }: RecommendPageProps) => {
     setLoading(true);
     setError(null);
     try {
-      // 헬스 체크(실패해도 계속 진행)
-      try { await healthCheck(); } catch {}
       const sections: RecommendationSection[] = await getRecommendations({ lat: coords?.lat, lng: coords?.lng });
-      const formattedData = sections.map(section => ({
-        category: section.category,
-        items: section.items.map(item => Place.fromRecommendationItem(item)),
-      }));
+      const formattedData = sections.map(section => {
+        return Place.fromAPIResponse(section);
+      });
+      console.log(formattedData);
       setData(formattedData);
     } catch (e: any) {
       setError(e?.response?.data?.detail || e?.message || 'API fetch error');
@@ -126,7 +119,7 @@ const RecommendPage = ({ onBack }: RecommendPageProps) => {
                   onPress={() => setSelectedPlace(place)}
                 >
                   {/* Placeholder image handling; adjust field names based on backend response */}
-                  <Image source={{ uri: place.images?.[0] || 'https://via.placeholder.com/100' }} style={styles.image} />
+                  {/* <Image source={{ uri: place.images?.[0] || 'https://via.placeholder.com/100' }} style={styles.image} /> */}
                   <Text style={styles.placeName}>{place.name}</Text>
                 </TouchableOpacity>
               ))}

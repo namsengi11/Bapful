@@ -16,6 +16,7 @@ import PlacePreview from "./PlacePreview";
 import UserProfile from "./UserProfile";
 import { Place } from "./Place";
 import { User } from "./User";
+import { searchLocations } from "./api";
 
 interface HomeProps { onShowRecommendations?: () => void }
 
@@ -50,8 +51,26 @@ export default function Home({ onShowRecommendations }: HomeProps) {
   }, [currentLocation]);
 
   useEffect(() => {
-    setShowPlaceResultPage(true);
-  }, [searchedPlaces, searchKeyword]);
+    const fetchSearchResults = async () => {
+      if (!searchKeyword.trim()) {
+        setSearchedPlaces([]);
+        setShowPlaceResultPage(false);
+        return;
+      }
+      
+      try {
+        const response = await searchLocations(searchKeyword);
+        setSearchedPlaces(response);
+        setShowPlaceResultPage(true);
+      } catch (error) {
+        console.error("위치 정보를 가져오는 데 실패했습니다:", error);
+        setSearchedPlaces([]);
+        setShowPlaceResultPage(false);
+      }
+    };
+
+    fetchSearchResults();
+  }, [searchKeyword]);
 
 
   const backToHome = () => {
@@ -140,6 +159,7 @@ export default function Home({ onShowRecommendations }: HomeProps) {
   };
 
   const handleBackFromReviews = () => {
+    console.log("handleBackFromReviews");
     setShowAllReviews(false);
     setShowPlaceDetail(true);
   };
@@ -147,24 +167,31 @@ export default function Home({ onShowRecommendations }: HomeProps) {
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <View style={styles.container}>
+        {/* TopBanner - Fixed at top */}
         <View style={styles.topBannerContainer}>
           <TopBanner toggleUserProfile={toggleUserProfile} backToHome={backToHome}/>
         </View>
-        <View style={styles.mapContainer}>
-          {currentLocation ? (
-            <KakaoMap
-              latitude={currentLocation.latitude}
-              longitude={currentLocation.longitude}
-              places={places}
-              onPlaceClick={handlePlaceClick}
-              onUserClick={handleUserClick}
-            />
-          ) : (
-            <Text>위치를 가져오는 중입니다...</Text>
-          )}
-        </View>
-        <View style={styles.searchBarContainer}>
-          <Searchbar setSearchedPlaces={setSearchedPlaces} setSearchKeyword={setSearchKeyword} />
+        
+        {/* Main content area */}
+        <View style={styles.contentContainer}>
+          <View style={styles.mapContainer}>
+            {currentLocation ? (
+              <KakaoMap
+                latitude={currentLocation.latitude}
+                longitude={currentLocation.longitude}
+                places={places}
+                onPlaceClick={handlePlaceClick}
+                onUserClick={handleUserClick}
+              />
+            ) : (
+              <Text>위치를 가져오는 중입니다...</Text>
+            )}
+          </View>
+          
+          {/* SearchBar - Absolute positioned over map */}
+          <View style={styles.searchBarContainer}>
+            <Searchbar setSearchedPlaces={setSearchedPlaces} setSearchKeyword={setSearchKeyword} />
+          </View>
         </View>
 
       </View>
@@ -192,11 +219,11 @@ export default function Home({ onShowRecommendations }: HomeProps) {
       </SlideUpModal>
       
       {/* Recommendation Button */}
-      {onShowRecommendations && (
+      {/* {onShowRecommendations && (
         <TouchableOpacity style={styles.recommendButton} onPress={onShowRecommendations}>
           <Text style={styles.recommendButtonText}>추천 보기</Text>
         </TouchableOpacity>
-      )}
+      )} */}
 
       {/* Place Detail Modal */}
       <SlideUpModal
@@ -205,10 +232,7 @@ export default function Home({ onShowRecommendations }: HomeProps) {
         backgroundColor={colors.secondaryColor} // Optional: default is white
         backdropOpacity={0} // Optional: default is 0.5
       >
-        {/* <PlaceReview place={selectedPlace!} /> */}
-        <View style={styles.placePreviewContainer}>
-          <PlacePreview place={selectedPlace!} onShowAllReviews={handleShowAllReviews} />
-        </View>
+        <PlacePreview place={selectedPlace!} onShowAllReviews={handleShowAllReviews} />
       </SlideUpModal>
 
       {/* All Reviews Modal */}
@@ -240,22 +264,21 @@ const styles = StyleSheet.create({
     flex: 8,
   },
   topBannerContainer: {
-    position: "absolute",
-    zIndex: 1000,
-    top: 0,
-    width: "100%",
     height: Dimensions.get("window").height * 0.10,
+    width: "100%",
+    zIndex: 1000,
+  },
+  contentContainer: {
     flex: 1,
+    position: "relative",
   },
   searchBarContainer: {
     position: "absolute",
-    top: Dimensions.get("window").height * 0.15,
+    top: 20,
+    left: "10%",
     width: "80%",
     height: 50,
-  },
-  placePreviewContainer: {
-    width: "100%",
-    height: Dimensions.get("window").height * 0.3,
+    zIndex: 999,
   },
   userProfileContainer: {
     flex: 1,

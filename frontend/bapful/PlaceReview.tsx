@@ -1,14 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Dimensions } from "react-native";
 import { Place } from "./Place";
 import colors from "./colors";
 
 export default function PlaceReview({ place, onBack }: { place: Place, onBack?: () => void }) {
   console.log(place);
 
-<<<<<<< HEAD
-  // Sample user data - in a real app, this would come from your backend
-  const reviewers: Reviewer[] = [];
-=======
   // Sample review data - in a real app, this would come from your backend
   const sampleReviews = [
     {
@@ -62,7 +58,6 @@ export default function PlaceReview({ place, onBack }: { place: Place, onBack?: 
       comments: 4,
     },
   ];
->>>>>>> 0a6399f876d7ccab00948fbd632584db677ba8ae
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, index) => (
@@ -96,6 +91,9 @@ export default function PlaceReview({ place, onBack }: { place: Place, onBack?: 
 
   return (
     <View style={styles.container}>
+      {/* Spacer for swipe zone */}
+      <View style={styles.swipeZoneSpacer} />
+      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
@@ -104,15 +102,6 @@ export default function PlaceReview({ place, onBack }: { place: Place, onBack?: 
         <Text style={styles.headerTitle}>리뷰 목록</Text>
         <View style={styles.placeholder} />
       </View>
-<<<<<<< HEAD
-      <View style={styles.otherReviewers}>
-        <Text style={styles.titleText}>Other Reviewers</Text>
-        <UserProfileList users={reviewers} onUserPress={handleUserPress} />
-      </View>
-      <View style={styles.otherReviews}>
-        <Text style={styles.titleText}>Other Reviews</Text>
-        <Text style={styles.descriptionText}>{selectedUser?.review}</Text>
-=======
 
       {/* Place Info */}
       <View style={styles.placeInfo}>
@@ -122,7 +111,6 @@ export default function PlaceReview({ place, onBack }: { place: Place, onBack?: 
           <Text style={styles.placeRating}>⭐ {place.rating || 4.5}</Text>
           <Text style={styles.placeReviewCount}>(리뷰 {sampleReviews.length}개)</Text>
         </View>
->>>>>>> 0a6399f876d7ccab00948fbd632584db677ba8ae
       </View>
 
       {/* Write Review Button */}
@@ -144,7 +132,12 @@ export default function PlaceReview({ place, onBack }: { place: Place, onBack?: 
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
+    height: Dimensions.get("window").height * 0.7,
+    backgroundColor: colors.secondaryColor,
+  },
+  swipeZoneSpacer: {
+    height: 20,
     backgroundColor: colors.secondaryColor,
   },
   header: {

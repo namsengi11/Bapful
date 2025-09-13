@@ -42,11 +42,11 @@ export default function SlideUpModal({
         evt: GestureResponderEvent,
         gestureState: PanResponderGestureState
       ) => {
-        // Capture only fast downward swipes; let children handle slower gestures
+        // Capture downward swipes that are primarily vertical
         const isPredominantlyVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
-        const isDownward = gestureState.dy > 0;
-        const isFast = gestureState.vy > CLOSE_VELOCITY_VY;
-        return isPredominantlyVertical && isDownward && isFast;
+        const isDownward = gestureState.dy > 10; // Minimum 10px movement
+        const hasMinimumMovement = Math.abs(gestureState.dy) > 5;
+        return isPredominantlyVertical && isDownward && hasMinimumMovement;
       },
       onPanResponderMove: (
         evt: GestureResponderEvent,
@@ -61,8 +61,11 @@ export default function SlideUpModal({
         evt: GestureResponderEvent,
         gestureState: PanResponderGestureState
       ) => {
-        // Close only on fast flicks, otherwise pass/keep content state
-        if (gestureState.vy > CLOSE_VELOCITY_VY && gestureState.dy > 0) {
+        // Close if user dragged down enough or with sufficient velocity
+        const draggedDownEnough = gestureState.dy > 100; // 100px threshold
+        const fastDownwardFlick = gestureState.vy > CLOSE_VELOCITY_VY && gestureState.dy > 0;
+        
+        if (draggedDownEnough || fastDownwardFlick) {
           closeModal();
         } else {
           // Snap back to open position
@@ -161,7 +164,6 @@ export default function SlideUpModal({
           >
             <View
               style={styles.swipeZone}
-              pointerEvents="box-only"
               {...panResponder.panHandlers}
             />
 
