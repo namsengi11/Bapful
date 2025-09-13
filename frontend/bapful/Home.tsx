@@ -59,7 +59,7 @@ export default function Home({ onShowRecommendations }: HomeProps) {
       }
       
       try {
-        const response = await searchLocations(searchKeyword);
+        const response = await searchLocations(searchKeyword, currentLocation?.latitude!, currentLocation?.longitude!);
         setSearchedPlaces(response);
         setShowPlaceResultPage(true);
       } catch (error) {

@@ -118,8 +118,11 @@ export async function getRecommendations(opts?: {
   return data;
 }
 
-export async function searchLocations(keyword: string): Promise<Place[]> {
-  const { data } = await api.get<Place[]>('/locations/search', { params: { keyword } });
+export async function searchLocations(keyword: string, lat: number, lng: number): Promise<Place[]> {
+  console.log('keyword', keyword);
+  console.log('lat', lat);
+  console.log('lng', lng);
+  const { data } = await api.get<Place[]>('/locations/search', { params: { keyword, lat, lng } });
   return data;
 }
 
