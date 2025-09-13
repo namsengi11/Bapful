@@ -18,7 +18,7 @@ from ..schemas import (
 from ..services import LocationService, ReviewService
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/locations", tags=["locations"])
+router = APIRouter(tags=["locations"])
 
 @router.get("", response_model=List[LocationResponse])
 async def getNearbyLocations(

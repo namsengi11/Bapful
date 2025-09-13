@@ -10,7 +10,7 @@ from ..database import getDatabaseSession
 from ..auth import getCurrentUser, verifyToken
 from ..models import User, Chat, ChatParticipant, ChatMessage
 
-router = APIRouter(prefix="/chat", tags=["chat"])
+router = APIRouter(tags=["chat"])
 logger = logging.getLogger(__name__)
 
 class ChatManager:

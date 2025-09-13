@@ -5,7 +5,7 @@ import time
 from ..models import User
 from ..auth import getCurrentUser, verifyToken
 
-router = APIRouter(prefix="/heatmap", tags=["heatmap"])
+router = APIRouter(tags=["heatmap"])
 
 class HeatmapManager:
   def __init__(self):
