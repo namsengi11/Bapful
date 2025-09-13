@@ -211,6 +211,8 @@ class LocationService:
     try:
       query_results = db.query(Location).filter(Location.name.ilike(f"%{keyword}%")).all()
     except Exception as e:
+      pass
+    except HTTPException as e:
       # No results in internal db
       pass
 
