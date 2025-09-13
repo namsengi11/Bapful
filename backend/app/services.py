@@ -211,10 +211,10 @@ class LocationService:
     try:
       query_results = db.query(Location).filter(Location.name.ilike(f"%{keyword}%")).all()
     except Exception as e:
-      pass
+      query_results = []
     except HTTPException as e:
       # No results in internal db
-      pass
+      query_results = []
 
     for loc in query_results:
       review_q = db.query(Review).filter(Review.locationId == loc.id)
