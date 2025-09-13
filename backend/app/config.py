@@ -13,7 +13,7 @@ class Settings(BaseSettings):
   jwtExpirationMinutes: int = 20
 
   # Tour API
-  tourAPIKey: str
+  tourapikey: str
 
   # Kakao Map API
   kakaomap_restapi_key: str
