@@ -28,7 +28,7 @@ export default function PlacePreview({place, onShowAllReviews}: {place: Place, o
       </View>
       <View style={styles.reviewContainer}>
 
-        {place.reviews.length > 0 && <View style={styles.userReviewContainer}>
+        {place.reviews?.length > 0 && <View style={styles.userReviewContainer}>
           <Text style={styles.bodyText}>{place.reviews[0].user}</Text>
           <Image source={require("./assets/spoon_rating.png")} style={styles.userRatingImage} />
           <Text style={styles.bodyText}>{place.reviews[0].rating}</Text>
@@ -36,7 +36,7 @@ export default function PlacePreview({place, onShowAllReviews}: {place: Place, o
         </View>
         }
 
-        {place.reviews.length > 1 && (
+        {place.reviews?.length > 1 && (
         <View style={styles.userReviewContainer}>
           <Text style={styles.bodyText}>{place.reviews[1].user}</Text>
           <Image source={require("./assets/spoon_rating.png")} style={styles.userRatingImage} />
@@ -45,10 +45,10 @@ export default function PlacePreview({place, onShowAllReviews}: {place: Place, o
         </View>
         )}
 
-        {place.reviews.length > 0 && (
+        {place.reviews?.length > 0 && (
           <TouchableOpacity style={styles.showAllReviewsButton} onPress={onShowAllReviews}>
             <Text style={styles.showAllReviewsText}>
-              리뷰 {place.reviews.length}개 모두 보기 {'>'}
+              리뷰 {place.reviews?.length ? place.reviews?.length : 0}개 모두 보기 {'>'}
             </Text>
           </TouchableOpacity>
         )}
