@@ -27,7 +27,7 @@ class LocationService:
   """Service for location-related operations"""
 
   # Use area based search for now
-  tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/areaBasedList1?serviceKey={settings.tourapikey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=11&signguCd=11110&_type=json"
+  tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/areaBasedList1?serviceKey={settings.tourapiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=11&signguCd=11110&_type=json"
 
   kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json"
   kakaoAPIQuery = [

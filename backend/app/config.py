@@ -1,18 +1,19 @@
 import os
 import secrets
 from typing import Optional
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = "sqlite:///./bapful.db"
-    # 과거 camelCase 호환
-    databaseUrl: str | None = None
-
-    SEED_DUMMY: bool = False  # 필요 시 .env 에 SEED_DUMMY=true
+    databaseUrl: str
 
     # Tour API
-    tourapikey: str
+    tourapiKey: str
+
+    # JWT
+    jwtSecretKey: str
+    jwtAlgorithm: str
+    jwtExpirationMinutes: int
     
     # Kakao Map API
     kakaomap_restapi_key: str
@@ -26,6 +27,7 @@ class Settings(BaseSettings):
     appName: str = "Bapful API"
     appVersion: str = "1.0.0"
     debugMode: bool = False
+    environment: str = "development"  # development, production
 
     class Config:
         env_file = ".env"

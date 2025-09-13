@@ -43,30 +43,7 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
-# Seed dummy data if empty
-def seed_dummy_data(db: Session):
-  from .models import Location
-  if db.query(Location).first():
-    return
-  # Add minimal dummy data
-  loc = Location(
-    name="Demo Place",
-    location_type="restaurant",
-    latitude=37.5665,
-    longitude=126.9780,
-    address="Seoul",
-  )
-  db.add(loc)
-  db.commit()
-  logger.info("Seeded dummy location data")
-
-if settings.SEED_DUMMY:
-  with next(getDatabaseSession()) as _db:
-    seed_dummy_data(_db)
-
 # Include routers
-
-
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(locations.router, prefix="/locations", tags=["locations"])
 app.include_router(menus.router, prefix="/menus", tags=["menus"])
