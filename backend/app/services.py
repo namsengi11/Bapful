@@ -212,7 +212,7 @@ class LocationService:
       query_results = db.query(Location).filter(Location.name.ilike(f"%{keyword}%")).all()
     except Exception as e:
       # No results in internal db
-      continue
+      pass
 
     for loc in query_results:
       review_q = db.query(Review).filter(Review.locationId == loc.id)
