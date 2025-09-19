@@ -29,7 +29,7 @@ class LocationService:
   # tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/searchKeyword1?serviceKey={settings.tourAPIKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=51&signguCd=51130&keyword=음식&_type=json"
 
   # Use area based search for now
-  tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/areaBasedList1?serviceKey={settings.tourAPIKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=51&signguCd=51130&_type=json"
+  tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/areaBasedList1?serviceKey={settings.tourapiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=51&signguCd=51130&_type=json"
 
 
   kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json"
@@ -152,6 +152,26 @@ class LocationService:
           "review_count": review_count
         })
     return results
+
+
+    """Get locations within radius with average ratings"""
+    # Query the database for locations within radius
+    locations = db.query(Location).filter(
+      func.sqrt(
+        (Location.latitude - lat) * (Location.latitude - lat) + (Location.longitude - lng) * (Location.longitude - lng)
+      ) <= radius
+    ).all()
+
+    kakaoLocations = LocationService.getKakaoLocations(lat, lng, radius)
+    tourAPILocations = LocationService.getTourAPILocations(lat, lng, radius)
+
+    # Async save result to db
+    locations = locations + kakaoLocations + tourAPILocations
+    print(locations)
+
+    return locations
+
+
 
   @staticmethod
   def getLocationReviews(

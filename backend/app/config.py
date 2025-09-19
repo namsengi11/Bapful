@@ -1,7 +1,7 @@
 import os
 import secrets
 from typing import Optional
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database
@@ -11,22 +11,23 @@ class Settings(BaseSettings):
 
     SEED_DUMMY: bool = False  # 필요 시 .env 에 SEED_DUMMY=true
 
+
     # JWT
     jwtSecretKey: str = secrets.token_urlsafe(32)
     jwtAlgorithm: str = "HS256"
     jwtExpirationMinutes: int = 20
-=======
+
+    #=======
   # Tour API
-  tourAPIKey: str
+    tourapiKey: str
 
   # Kakao Map API
-  kakaomap_restapi_key: str
+    kakaomap_restapi_key: str
 
   # File Storage
-  uploadsDir: str = "uploads"
-  maxFileSize: int = 10 * 1024 * 1024  # 10MB
-  allowedExtensions: set = {".jpg", ".jpeg", ".png", ".webp"}
->>>>>>> upstream/main
+    uploadsDir: str = "uploads"
+    maxFileSize: int = 10 * 1024 * 1024  # 10MB
+    allowedExtensions: set = {".jpg", ".jpeg", ".png", ".webp"}
 
     # File Storage
     uploadsDir: str = "uploads"
