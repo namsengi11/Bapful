@@ -13,8 +13,10 @@ export default function PlacePreview({place, onShowAllReviews}: {place: Place, o
           <Text style={styles.titleText}>{place.name}</Text>
         </View>
         <Image source={require("./assets/spoon_rating.png")} style={styles.placeRatingImage} />
-        <Text style={styles.bodyText}>{place.rating}</Text>
-        <Text style={styles.bodyText}> ({place.ratingCount})</Text>
+        <Text style={styles.bodyText}>{
+          place.rating ? place.rating : "No Review"
+        }</Text>
+        <Text style={styles.bodyText}> {place.ratingCount ? "(" + place.ratingCount + ")" : ""}</Text>
       </View>
 
       <View style={styles.descriptionContainer}>
@@ -26,7 +28,7 @@ export default function PlacePreview({place, onShowAllReviews}: {place: Place, o
       </View>
       <View style={styles.reviewContainer}>
 
-        {place.reviews.length > 0 && <View style={styles.userReviewContainer}>
+        {place.reviews?.length > 0 && <View style={styles.userReviewContainer}>
           <Text style={styles.bodyText}>{place.reviews[0].user}</Text>
           <Image source={require("./assets/spoon_rating.png")} style={styles.userRatingImage} />
           <Text style={styles.bodyText}>{place.reviews[0].rating}</Text>
@@ -34,7 +36,7 @@ export default function PlacePreview({place, onShowAllReviews}: {place: Place, o
         </View>
         }
 
-        {place.reviews.length > 1 && (
+        {place.reviews?.length > 1 && (
         <View style={styles.userReviewContainer}>
           <Text style={styles.bodyText}>{place.reviews[1].user}</Text>
           <Image source={require("./assets/spoon_rating.png")} style={styles.userRatingImage} />
@@ -43,10 +45,10 @@ export default function PlacePreview({place, onShowAllReviews}: {place: Place, o
         </View>
         )}
 
-        {place.reviews.length > 0 && (
+        {place.reviews?.length > 0 && (
           <TouchableOpacity style={styles.showAllReviewsButton} onPress={onShowAllReviews}>
             <Text style={styles.showAllReviewsText}>
-              리뷰 {place.reviews.length}개 모두 보기 {'>'}
+              리뷰 {place.reviews?.length ? place.reviews?.length : 0}개 모두 보기 {'>'}
             </Text>
           </TouchableOpacity>
         )}
@@ -59,12 +61,12 @@ export default function PlacePreview({place, onShowAllReviews}: {place: Place, o
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     flexDirection: "column",
     justifyContent: "flex-start",
     alignItems: "flex-start",
     width: "100%",
-    height: "100%",
+    height: Dimensions.get("window").height * 0.4,
     padding: 16,
   },
   titleContainer: {
@@ -76,7 +78,7 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   descriptionContainer: {
-    flex: 1,
+    flex: 0.7,
     justifyContent: "flex-start",
     alignItems: "flex-start",
     width: "100%",

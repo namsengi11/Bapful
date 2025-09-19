@@ -25,11 +25,12 @@ def calculateDistance(lat1: float, lng1: float, lat2: float, lng2: float) -> flo
 
 class LocationService:
   """Service for location-related operations"""
-  # Keyword based search has auth issues
-  # tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/searchKeyword1?serviceKey={settings.tourAPIKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=51&signguCd=51130&keyword=음식&_type=json"
 
   # Use area based search for now
+  # Use area based search for now
   tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/areaBasedList1?serviceKey={settings.tourapiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=51&signguCd=51130&_type=json"
+
+  kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json"
 
 
   kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json"
@@ -84,10 +85,13 @@ class LocationService:
     """Get locations from tour API"""
 
     # Logic to get area code for API from lat, lng
-
-    response = requests.get(LocationService.tourAPIUrl).json()['response']['body']['items']['item']
+    response = requests.get(LocationService.tourAPIUrl).json()
+    try:
+      items = response['response']['body']['items']['item']
+    except:
+      raise HTTPException(status_code=500, detail="Failed to get locations from tour API")
     result = []
-    for item in response:
+    for item in items:
       if item['rlteCtgryLclsNm'] != "음식":
         continue
       # Extract name and find coordinates
@@ -104,18 +108,18 @@ class LocationService:
     return resultToLocationResponse
 
   @staticmethod
-  def getKakaoLocations(lat: float, lng: float, radius: int = 1000) -> List[dict]:
+  def getKakaoLocations(lat: float, lng: float, radius: int = 1000, query: str = "음식") -> List[dict]:
     """Get locations from Kakao API"""
-    queryUrl = LocationService.kakaoAPIUrl + LocationService.kakaoAPIQuery[0] + "음식" + LocationService.kakaoAPIQuery[1] + str(lat) + LocationService.kakaoAPIQuery[2] + str(radius)
+    queryUrl = LocationService.kakaoAPIUrl + LocationService.kakaoAPIQuery[0] + query + LocationService.kakaoAPIQuery[1] + str(lat) + LocationService.kakaoAPIQuery[2] + str(radius)
     response = requests.get(
       queryUrl,
       headers={"Authorization": f"KakaoAK {settings.kakaomap_restapi_key}"}
     )
 
     result = [KakaoLocation.fromKakaoAPIResult(location) for location in response.json()["documents"]]
-    print(result)
+
     resultToLocationResponse = [LocationResponse.model_validate(location) for location in result]
-    print(resultToLocationResponse)
+
     return resultToLocationResponse
 
   @staticmethod
@@ -207,6 +211,40 @@ class LocationService:
       })
 
     return result
+
+  @staticmethod
+  def searchLocations(
+    db: Session,
+    keyword: str,
+    lat: float,
+    lng: float
+  ) -> List[dict]:
+    """Search for locations"""
+    db_results: List[dict] = []
+    try:
+      query_results = db.query(Location).filter(Location.name.ilike(f"%{keyword}%")).all()
+    except Exception as e:
+      query_results = []
+    except HTTPException as e:
+      # No results in internal db
+      query_results = []
+
+    for loc in query_results:
+      review_q = db.query(Review).filter(Review.locationId == loc.id)
+      review_count = review_q.count()
+      if review_count:
+        avg_rating = sum(r.rating for r in review_q) / review_count
+      db_results.append({
+            "id": loc.id,
+            "name": loc.name,
+            "location_type": loc.location_type,
+            "coordinates": {"lat": loc.latitude, "lng": loc.longitude},
+            "avg_rating": round(avg_rating, 2),
+            "review_count": review_count
+      })
+    kakao_result = LocationService.getKakaoLocations(lat, lng, 1000, keyword)
+    all_results = db_results + kakao_result
+    return all_results
 
 class ReviewService:
   """Service for review-related operations"""

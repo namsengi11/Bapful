@@ -17,17 +17,11 @@ class Settings(BaseSettings):
     jwtAlgorithm: str = "HS256"
     jwtExpirationMinutes: int = 20
 
-    #=======
-  # Tour API
-    tourapiKey: str
+    # Tour API
+    tourapiKey: str = ""
 
-  # Kakao Map API
-    kakaomap_restapi_key: str
-
-  # File Storage
-    uploadsDir: str = "uploads"
-    maxFileSize: int = 10 * 1024 * 1024  # 10MB
-    allowedExtensions: set = {".jpg", ".jpeg", ".png", ".webp"}
+    # Kakao Map API
+    kakaomap_restapi_key: str = ""
 
     # File Storage
     uploadsDir: str = "uploads"
@@ -38,6 +32,7 @@ class Settings(BaseSettings):
     appName: str = "Bapful API"
     appVersion: str = "1.0.0"
     debugMode: bool = False
+    environment: str = "development"  # development, production
 
     class Config:
         env_file = ".env"

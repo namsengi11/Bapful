@@ -4,6 +4,7 @@ export class Place {
   latitude: number;
   longitude: number;
   name: string;
+  type: string;
   address: string;
   description: string;
   rating: number;
@@ -14,12 +15,19 @@ export class Place {
     rating: number;
     date: string;
   }[];
-  images: string[];
+  // reviews: {
+  //   user: string;
+  //   comment: string;
+  //   rating: number;
+  //   date: string;
+  // }[];
+  // images: string[];
 
   constructor(data: {
     latitude: number;
     longitude: number;
     name: string;
+    type: string;
     address: string;
     description: string;
     rating: number;
@@ -30,30 +38,36 @@ export class Place {
       rating: number;
       date: string;
     }[];
-    images: string[];
+    // reviews: {
+    //   user: string;
+    //   comment: string;
+    //   rating: number;
+    //   date: string;
+    // }[];
+    // images: string[];
   }) {
     this.latitude = data.latitude;
     this.longitude = data.longitude;
     this.name = data.name;
+    this.type = data.type;
     this.address = data.address;
     this.description = data.description;
     this.rating = data.rating;
     this.ratingCount = data.ratingCount;
     this.reviews = data.reviews;
-    this.images = data.images;
   }
 
   static fromAPIResponse(apiResponse: any): Place {
     return new Place({
-      latitude: apiResponse.latitude,
-      longitude: apiResponse.longitude,
+      latitude: apiResponse.coordinates?.lat,
+      longitude: apiResponse.coordinates?.lng,
       name: apiResponse.name,
+      type: apiResponse.location_type,
       address: apiResponse.address,
       description: apiResponse.description,
-      rating: apiResponse.rating,
-      ratingCount: apiResponse.ratingCount,
-      reviews: apiResponse.reviews,
-      images: apiResponse.images,
+      rating: apiResponse.avg_rating,
+      ratingCount: apiResponse.review_count,
+      reviews: [],
     });
   }
 
@@ -62,12 +76,13 @@ export class Place {
       latitude: apiResponse.y,
       longitude: apiResponse.x,
       name: apiResponse.place_name,
+      type: apiResponse.category_group_name,
       address: apiResponse.address_name,
       description: "",
       rating: 0,
       ratingCount: 0,
       reviews: [],
-      images: [],
+      // images: [],
     });
   }
 
@@ -76,12 +91,13 @@ export class Place {
       latitude: item.coordinates?.lat ?? 0,
       longitude: item.coordinates?.lng ?? 0,
       name: item.name,
+      type: item.location_type ?? "",
       address: "",
       description: "",
       rating: item.avg_rating ?? 0,
       ratingCount: item.review_count ?? 0,
       reviews: [],
-      images: [],
+      // images: [],
     });
   }
 }

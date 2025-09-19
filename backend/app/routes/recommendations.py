@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from ..database import getDatabaseSession
 from ..services import RecommendationService  # 변경: 올바른 서비스 임포트
 
-router = APIRouter()
+router = APIRouter(tags=["recommendations"])
 
 @router.get("")
 def recommendations(

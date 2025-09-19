@@ -13,7 +13,10 @@ import colors from "./colors";
 import Searchbar from "./Searchbar";
 import PlaceResultPage from "./PlaceResultPage";
 import PlacePreview from "./PlacePreview";
+import UserProfile from "./UserProfile";
 import { Place } from "./Place";
+import { User } from "./User";
+import { searchLocations } from "./api";
 
 interface HomeProps { onShowRecommendations?: () => void }
 
@@ -32,6 +35,10 @@ export default function Home({ onShowRecommendations }: HomeProps) {
   const [searchKeyword, setSearchKeyword] = useState<string>("");
   const [searchedPlaces, setSearchedPlaces] = useState<Place[]>([]);
   const [showPlaceResultPage, setShowPlaceResultPage] = useState<boolean>(false);
+  
+  const [showUserProfile, setShowUserProfile] = useState<boolean>(false);
+  const [showMyProfile, setShowMyProfile] = useState<boolean>(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const map_rest_api_key = process.env.EXPO_PUBLIC_REST_API_KEY;
 
@@ -44,8 +51,38 @@ export default function Home({ onShowRecommendations }: HomeProps) {
   }, [currentLocation]);
 
   useEffect(() => {
-    setShowPlaceResultPage(true);
-  }, [searchedPlaces, searchKeyword]);
+    const fetchSearchResults = async () => {
+      if (!searchKeyword.trim()) {
+        setSearchedPlaces([]);
+        setShowPlaceResultPage(false);
+        return;
+      }
+      
+      try {
+        const response = await searchLocations(searchKeyword, currentLocation?.latitude!, currentLocation?.longitude!);
+        setSearchedPlaces(response);
+        setShowPlaceResultPage(true);
+      } catch (error) {
+        console.error("위치 정보를 가져오는 데 실패했습니다:", error);
+        setSearchedPlaces([]);
+        setShowPlaceResultPage(false);
+      }
+    };
+
+    fetchSearchResults();
+  }, [searchKeyword]);
+
+
+  const backToHome = () => {
+    setShowMyProfile(false);
+    setShowUserProfile(false);
+    setShowPlaceDetail(false);
+    setShowPlaceResultPage(false);
+  }
+  
+  const toggleUserProfile = () => {
+    setShowMyProfile(!showMyProfile);
+  }
 
   const getCurrentLocation = async () => {
     const { status } = await requestForegroundPermissionsAsync();
@@ -69,19 +106,12 @@ export default function Home({ onShowRecommendations }: HomeProps) {
 
   const getNearbyTourism = async () => {
     const response = await fetch(
-      `https://dapi.kakao.com/v2/local/search/keyword.json?query=관광지&x=${currentLocation?.longitude}&y=${currentLocation?.latitude}&radius=2000`,
-      {
-        headers: {
-          Authorization: `KakaoAK ${map_rest_api_key}`,
-        },
-      }
+      `http://bapful.sjnam.site/api/locations?lat=${currentLocation?.latitude}&lng=${currentLocation?.longitude}&radius=2000`
     );
     const data = await response.json();
 
-    // Map data to KakaoMapPlace[]
-    console.log(data.documents);
-    const places = data.documents.map((place: any) => {
-      const mappedPlace = Place.fromKakaoAPIResponse(place);
+    const places = data.map((place: any) => {
+      const mappedPlace = Place.fromAPIResponse(place);
       // Add sample reviews for demonstration
       mappedPlace.reviews = [
         {
@@ -99,14 +129,29 @@ export default function Home({ onShowRecommendations }: HomeProps) {
       ];
       return mappedPlace;
     });
-    console.log(places);
+    
     setPlaces(places);
   };
-
+  
   const handlePlaceClick = (place: Place) => {
     setSelectedPlace(place);
     setShowPlaceDetail(true);
   };
+  
+  const handleUserClick = (user: User) => {  
+    setSelectedUser(user);
+    setShowUserProfile(true);
+  };
+  
+  const myUserInfo = new User({
+    id: "1",
+    name: "김민수",
+    latitude: 37.4,
+    longitude: 127.1,
+    statusMessage: "I love food",
+    backgroundImage: "./assets/backgrounds/namsan_tower.png",
+    foodImages: ["./assets/foods/bossam.png", "./assets/foods/japchae.png", "./assets/foods/samgyetang.png", "./assets/foods/soondubu.png", "./assets/foods/tbk.png"],
+  });
 
   const handleShowAllReviews = () => {
     setShowPlaceDetail(false);
@@ -114,6 +159,7 @@ export default function Home({ onShowRecommendations }: HomeProps) {
   };
 
   const handleBackFromReviews = () => {
+    console.log("handleBackFromReviews");
     setShowAllReviews(false);
     setShowPlaceDetail(true);
   };
@@ -121,63 +167,84 @@ export default function Home({ onShowRecommendations }: HomeProps) {
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <View style={styles.container}>
+        {/* TopBanner - Fixed at top */}
         <View style={styles.topBannerContainer}>
-          <TopBanner />
+          <TopBanner toggleUserProfile={toggleUserProfile} backToHome={backToHome}/>
         </View>
-        <View style={styles.searchBarContainer}>
-          <Searchbar setSearchedPlaces={setSearchedPlaces} setSearchKeyword={setSearchKeyword} />
-        </View>
-        <View style={styles.mapContainer}>
-          {currentLocation ? (
-            <KakaoMap
-              latitude={currentLocation.latitude}
-              longitude={currentLocation.longitude}
-              places={places}
-              onPlaceClick={handlePlaceClick}
-            />
-          ) : (
-            <Text>위치를 가져오는 중입니다...</Text>
-          )}
+        
+        {/* Main content area */}
+        <View style={styles.contentContainer}>
+          <View style={styles.mapContainer}>
+            {currentLocation ? (
+              <KakaoMap
+                latitude={currentLocation.latitude}
+                longitude={currentLocation.longitude}
+                places={places}
+                onPlaceClick={handlePlaceClick}
+                onUserClick={handleUserClick}
+              />
+            ) : (
+              <Text>위치를 가져오는 중입니다...</Text>
+            )}
+          </View>
+          
+          {/* SearchBar - Absolute positioned over map */}
+          <View style={styles.searchBarContainer}>
+            <Searchbar setSearchedPlaces={setSearchedPlaces} setSearchKeyword={setSearchKeyword} />
+          </View>
         </View>
 
       </View>
-      {onShowRecommendations && (
+      
+      {showMyProfile && 
+        <View style={styles.userProfileContainer}>
+          <UserProfile myProfile={true} user={myUserInfo} />
+        </View>
+      }
+
+      {showUserProfile && 
+        <View style={styles.userProfileContainer}>
+          <UserProfile myProfile={false} user={selectedUser!} />
+        </View>
+      }
+
+      {/* Search Result Modal */}
+      <SlideUpModal
+        visible={showPlaceResultPage}
+        onClose={() => setShowPlaceResultPage(false)}
+        backgroundColor={colors.secondaryColor} // Optional: default is white
+        backdropOpacity={0.3} // Optional: default is 0.5
+      >
+        <PlaceResultPage searchKeyword={searchKeyword} searchedPlaces={searchedPlaces} />
+      </SlideUpModal>
+      
+      {/* Recommendation Button */}
+      {/* {onShowRecommendations && (
         <TouchableOpacity style={styles.recommendButton} onPress={onShowRecommendations}>
           <Text style={styles.recommendButtonText}>추천 보기</Text>
         </TouchableOpacity>
-      )}
-        {/* Place Detail Modal */}
-        <SlideUpModal
-          visible={showPlaceDetail}
-          onClose={() => setShowPlaceDetail(false)}
-          backgroundColor={colors.secondaryColor} // Optional: default is white
-          backdropOpacity={0} // Optional: default is 0.5
-        >
-          {/* <PlaceReview place={selectedPlace!} /> */}
-          <View style={styles.placePreviewContainer}>
-            <PlacePreview place={selectedPlace!} onShowAllReviews={handleShowAllReviews} />
-          </View>
-        </SlideUpModal>
+      )} */}
 
-        {/* All Reviews Modal */}
-        <SlideUpModal
-          visible={showAllReviews}
-          onClose={() => setShowAllReviews(false)}
-          backgroundColor={colors.secondaryColor}
-          backdropOpacity={0.3}
-        >
-          <PlaceReview place={selectedPlace!} onBack={handleBackFromReviews} />
-        </SlideUpModal>
+      {/* Place Detail Modal */}
+      <SlideUpModal
+        visible={showPlaceDetail}
+        onClose={() => setShowPlaceDetail(false)}
+        backgroundColor={colors.secondaryColor} // Optional: default is white
+        backdropOpacity={0} // Optional: default is 0.5
+      >
+        <PlacePreview place={selectedPlace!} onShowAllReviews={handleShowAllReviews} />
+      </SlideUpModal>
 
-        {/* Search Result Modal */}
-        <SlideUpModal
-          visible={showPlaceResultPage}
-          onClose={() => setShowPlaceResultPage(false)}
-          backgroundColor={colors.secondaryColor} // Optional: default is white
-          backdropOpacity={0.3} // Optional: default is 0.5
-        >
-          <PlaceResultPage searchKeyword={searchKeyword} searchedPlaces={searchedPlaces} />
-        </SlideUpModal>
+      {/* All Reviews Modal */}
+      <SlideUpModal
+        visible={showAllReviews}
+        onClose={() => setShowAllReviews(false)}
+        backgroundColor={colors.secondaryColor}
+        backdropOpacity={0.3}
+      >
+        <PlaceReview place={selectedPlace!} onBack={handleBackFromReviews} />
+      </SlideUpModal>
+
 
     </SafeAreaView>
   );
@@ -197,20 +264,30 @@ const styles = StyleSheet.create({
     flex: 8,
   },
   topBannerContainer: {
+    height: Dimensions.get("window").height * 0.10,
     width: "100%",
+    zIndex: 1000,
+  },
+  contentContainer: {
     flex: 1,
+    position: "relative",
   },
   searchBarContainer: {
     position: "absolute",
-    top: Dimensions.get("window").height * 0.15,
+    top: 20,
+    left: "10%",
     width: "80%",
     height: 50,
-
-    zIndex: 1000,
+    zIndex: 999,
   },
-  placePreviewContainer: {
+  userProfileContainer: {
+    flex: 1,
+    position: "absolute",
+    top: Dimensions.get("window").height * 0.10,
     width: "100%",
-    height: Dimensions.get("window").height * 0.3,
+    height: Dimensions.get("window").height * 0.90,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   recommendButton: {
     position: 'absolute',

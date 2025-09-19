@@ -39,9 +39,9 @@ const App = () => {
     return <LoginPage onSuccess={() => setLoggedIn(true)} goToRegister={() => setShowRegister(true)} />;
   }
 
-  if (showRecommendations) {
-    return <RecommendPage onBack={() => setShowRecommendations(false)} />;
-  }
+  // if (showRecommendations) {
+  //   return <RecommendPage onBack={() => setShowRecommendations(false)} />;
+  // }
 
   return <Home onShowRecommendations={() => setShowRecommendations(true)} />;
 };

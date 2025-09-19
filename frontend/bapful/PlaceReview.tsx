@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Dimensions } from "react-native";
 import { Place } from "./Place";
 import colors from "./colors";
 
@@ -91,6 +91,9 @@ export default function PlaceReview({ place, onBack }: { place: Place, onBack?: 
 
   return (
     <View style={styles.container}>
+      {/* Spacer for swipe zone */}
+      <View style={styles.swipeZoneSpacer} />
+      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
@@ -129,7 +132,12 @@ export default function PlaceReview({ place, onBack }: { place: Place, onBack?: 
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
+    height: Dimensions.get("window").height * 0.7,
+    backgroundColor: colors.secondaryColor,
+  },
+  swipeZoneSpacer: {
+    height: 20,
     backgroundColor: colors.secondaryColor,
   },
   header: {

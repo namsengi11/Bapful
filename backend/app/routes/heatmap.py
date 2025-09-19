@@ -5,7 +5,7 @@ import time
 from ..models import User
 from ..auth import getCurrentUser, verifyToken
 
-router = APIRouter(prefix="/heatmap", tags=["heatmap"])
+router = APIRouter(tags=["heatmap"])
 
 class HeatmapManager:
   def __init__(self):
@@ -69,6 +69,12 @@ class HeatmapManager:
     self.user_last_location[user_id] = (lat, lng)
 
 heatmap_manager = HeatmapManager()
+
+@router.websocket("/ws")
+async def getHeatmap(
+  websocket: WebSocket,
+  ):
+  await heatmap_manager.connect(websocket)
 
 # websocket test code
 # html = """
@@ -158,9 +164,3 @@ heatmap_manager = HeatmapManager()
 # @router.get("")
 # async def getWSPage():
 #   return HTMLResponse(content=html)
-
-@router.websocket("/ws")
-async def getHeatmap(
-  websocket: WebSocket,
-  ):
-  await heatmap_manager.connect(websocket)

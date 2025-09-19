@@ -4,6 +4,7 @@ import {
   ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image
 } from 'react-native';
 import { register } from './api';
+import { AxiosError } from 'axios';
 
 interface RegisterPageProps {
   onSuccess?: () => void;
@@ -28,14 +29,21 @@ const RegisterPage = ({ onSuccess, goToLogin }: RegisterPageProps) => {
       Alert.alert('알림', '모든 항목을 채우고 비밀번호를 확인하세요.');
       return;
     }
+    // Check if email format is in form 'xxx@xxx.xxx'
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert('이메일 오류', '올바른 이메일 형식을 입력해주세요\n(예: user@example.com)');
+      return;
+    }
+
     setLoading(true);
     try {
       const data = await register(name.trim(), email.trim(), pw);
       Alert.alert('환영합니다', `${data.user.name} 님 가입 완료`);
       onSuccess && onSuccess();
     } catch (e: any) {
-      const msg = e?.response?.data?.detail || e?.message || '회원가입 실패';
-      Alert.alert('실패', msg);
+      const error = e as AxiosError;
+      Alert.alert('Failed to register', 'Please validate your credentials');
     } finally {
       setLoading(false);
     }

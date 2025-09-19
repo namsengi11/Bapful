@@ -7,7 +7,7 @@ from ..auth import authenticateUser, createUser, getUserByEmail, createAccessTok
 from ..schemas import UserCreate, UserLogin, AuthResponse, UserResponse
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/auth", tags=["authentication"])
+router = APIRouter(tags=["authentication"])
 
 @router.post("/register", response_model=AuthResponse)
 async def register(

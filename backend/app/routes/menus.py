@@ -12,7 +12,7 @@ from ..services import MenuService
 from ..storage import fileStorage
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/menus", tags=["menus"])
+router = APIRouter(tags=["menus"])
 
 # ===== CORE MENU FUNCTIONALITY =====
 

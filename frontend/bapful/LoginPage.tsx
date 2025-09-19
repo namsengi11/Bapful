@@ -12,6 +12,7 @@ import {
   Alert
 } from 'react-native';
 import { login } from './api';
+import { AxiosError } from 'axios';
 
 interface LoginPageProps {
   navigation?: any;
@@ -29,13 +30,23 @@ const LoginPage = ({ navigation, onSuccess, goToRegister }: LoginPageProps) => {
       Alert.alert('알림', 'Username / Password 를 입력하세요.');
       return;
     }
+    // Check if email format is in form 'xxx@xxx.xxx'
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert('이메일 오류', '올바른 이메일 형식을 입력해주세요\n(예: user@example.com)');
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await login(email.trim(), pw);
       if (onSuccess) onSuccess();
       else if (navigation) navigation.replace('Home');
     } catch (e: any) {
-      Alert.alert('로그인 실패', e?.response?.data?.detail || e?.message || 'Failed');
+      const error = e as AxiosError;
+      // console.error('Login error:', e);
+      console.log(error);
+      Alert.alert('Incorrect credentials');
     } finally {
       setLoading(false);
     }

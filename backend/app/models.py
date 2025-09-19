@@ -19,6 +19,8 @@ class User(Base):
   # Relationships
   reviews = relationship("Review", back_populates="user")
   reviewRatings = relationship("ReviewRating", back_populates="user")
+  chats = relationship("ChatParticipant", back_populates="user")
+  messages = relationship("ChatMessage", back_populates="user")
   # lastLogin = relationship("LastLogin", back_populates="user")
 
 class Location(Base):
@@ -109,3 +111,35 @@ class FileUpload(Base):
 
 #   # Relationships
 #   user = relationship("User", back_populates="lastLogin")
+
+class Chat(Base):
+  __tablename__ = "chats"
+
+  id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+
+  # Relationships
+  participants = relationship("ChatParticipant", back_populates="chat")
+  messages = relationship("ChatMessage", back_populates="chat")
+
+class ChatParticipant(Base):
+  __tablename__ = "chat_participants"
+
+  id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+  chatId = Column(String, ForeignKey("chats.id"), nullable=False)
+  userId = Column(String, ForeignKey("users.id"), nullable=False)
+  createdAt = Column(DateTime, default=func.now())
+
+  chat = relationship("Chat", back_populates="participants")
+  user = relationship("User", back_populates="chats")
+
+class ChatMessage(Base):
+  __tablename__ = "chat_messages"
+
+  id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+  chatId = Column(String, ForeignKey("chats.id"), nullable=False)
+  userId = Column(String, ForeignKey("users.id"), nullable=False)
+  message = Column(Text, nullable=False)
+  createdAt = Column(DateTime, default=func.now())
+
+  chat = relationship("Chat", back_populates="messages")
+  user = relationship("User", back_populates="messages")
