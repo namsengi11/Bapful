@@ -7,6 +7,16 @@
   overflow: hidden;
 }
 
+:root {
+  --primary-color: #ECD5A5;
+  --secondary-color: #FEF5D4;
+  --tertiary-color: #DFBF91;
+  --bright-border: #9E4F04;
+  --gray: #BBB5B5;
+  --black: #000000;
+  --white: #FFFFFF;
+}
+
 /* Top Banner Styles */
 .top-banner {
   position: absolute;
@@ -14,10 +24,9 @@
   left: 0;
   right: 0;
   height: 10vh;
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  background-color: var(--primary-color);
   z-index: 1000;
-  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .top-banner-content {
@@ -28,54 +37,83 @@
   height: 100%;
 }
 
-.top-banner h1 {
-  margin: 0;
-  font-size: 24px;
-  color: #333;
-  font-weight: bold;
+.bapful-logo {
+  height: 100px;
+  width: auto;
+  object-fit: contain;
 }
 
 .profile-button {
-  background-color: #007AFF;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 14px;
+  background: none;
+  border: 2px solid var(--bright-border);
+  padding: 10px;
+  border-radius: 50%;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .profile-button:hover {
-  background-color: #0056b3;
+  background-color: var(--tertiary-color);
+  transform: scale(1.05);
+}
+
+.profile-icon {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
 }
 
 /* Search Bar Styles */
 .search-bar-container {
   position: absolute;
-  top: 15vh;
+  top: 12vh;
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  max-width: 400px;
+  width: 85%;
+  max-width: 450px;
   z-index: 999;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .search-input {
   width: 100%;
-  padding: 12px 16px;
-  border: none;
+  padding: 14px 50px 14px 20px;
+  border: 1px solid var(--tertiary-color);
   border-radius: 25px;
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: var(--white);
+  box-shadow: 0 4px 15px rgba(158, 79, 4, 0.15);
   font-size: 16px;
   outline: none;
-  transition: box-shadow 0.3s ease;
+  transition: all 0.3s ease;
+  color: var(--black);
+}
+
+.search-input::placeholder {
+  color: var(--gray);
+  font-style: italic;
 }
 
 .search-input:focus {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 25px rgba(158, 79, 4, 0.25);
+  transform: translateY(-1px);
+  border-color: var(--bright-border);
+}
+
+.search-icon {
+  position: absolute;
+  right: 15px;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  pointer-events: none;
 }
 
 /* Map Container Styles */
@@ -91,12 +129,12 @@
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-color: #f5f5f5;
+  background-color: var(--secondary-color);
 }
 
 .loading-container p {
   font-size: 18px;
-  color: #666;
+  color: var(--gray);
 }
 
 /* User Profile Overlay */
@@ -114,13 +152,14 @@
 }
 
 .user-profile-content {
-  background-color: white;
+  background-color: var(--white);
+  border: 2px solid var(--bright-border);
   border-radius: 12px;
   width: 90%;
   max-width: 400px;
   max-height: 80vh;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(158, 79, 4, 0.2);
 }
 
 .user-profile-header {
@@ -128,8 +167,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid #e0e0e0;
-  background-color: #f8f9fa;
+  border-bottom: 1px solid var(--tertiary-color);
+  background-color: var(--secondary-color);
 }
 
 .user-profile-body {
@@ -153,13 +192,14 @@
 }
 
 .modal-content {
-  background-color: white;
+  background-color: var(--white);
+  border: 2px solid var(--bright-border);
   border-radius: 12px 12px 0 0;
   width: 100%;
   max-width: 500px;
   max-height: 70vh;
   overflow: hidden;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -4px 20px rgba(158, 79, 4, 0.1);
   animation: slideUp 0.3s ease;
 }
 
@@ -172,21 +212,21 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid #e0e0e0;
-  background-color: #f8f9fa;
+  border-bottom: 1px solid var(--tertiary-color);
+  background-color: var(--secondary-color);
 }
 
 .modal-header h3 {
   margin: 0;
   font-size: 18px;
-  color: #333;
+  color: var(--black);
 }
 
 .close-button {
   background: none;
   border: none;
   font-size: 24px;
-  color: #666;
+  color: var(--gray);
   cursor: pointer;
   padding: 0;
   width: 30px;
@@ -199,7 +239,8 @@
 }
 
 .close-button:hover {
-  background-color: #e0e0e0;
+  background-color: var(--tertiary-color);
+  color: var(--bright-border);
 }
 
 .modal-body {
@@ -217,29 +258,30 @@
 
 .search-result-item {
   padding: 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--tertiary-color);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
+  background-color: var(--white);
 }
 
 .search-result-item:hover {
-  background-color: #f8f9fa;
-  border-color: #007AFF;
+  background-color: var(--secondary-color);
+  border-color: var(--bright-border);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(158, 79, 4, 0.1);
 }
 
 .search-result-item h4 {
   margin: 0 0 4px 0;
   font-size: 16px;
-  color: #333;
+  color: var(--black);
 }
 
 .search-result-item p {
   margin: 0;
   font-size: 14px;
-  color: #666;
+  color: var(--gray);
 }
 
 /* Animations */
@@ -263,17 +305,34 @@
 
 /* Mobile Optimizations */
 @media (max-width: 768px) {
-  .top-banner h1 {
-    font-size: 20px;
+  .top-banner {
+    height: 8vh;
+    min-height: 60px;
+  }
+
+  .bapful-logo {
+    height: 100px;
+  }
+
+  .profile-icon {
+    width: 28px;
+    height: 28px;
   }
 
   .search-bar-container {
     width: 90%;
-    top: 12vh;
+    top: 10vh;
   }
 
   .search-input {
     font-size: 16px; /* Prevent zoom on iOS */
+    padding: 12px 45px 12px 18px;
+  }
+
+  .search-icon {
+    width: 18px;
+    height: 18px;
+    right: 12px;
   }
 
   .modal-content {
@@ -286,26 +345,59 @@
 }
 
 @media (max-width: 480px) {
+  .top-banner {
+    height: 7vh;
+    min-height: 55px;
+  }
+
   .top-banner-content {
     padding: 0 16px;
   }
 
-  .top-banner h1 {
-    font-size: 18px;
+  .bapful-logo {
+    height: 100px;
   }
 
   .profile-button {
-    padding: 6px 12px;
-    font-size: 12px;
+    padding: 8px;
+  }
+
+  .profile-icon {
+    width: 30px;
+    height: 30px;
   }
 
   .search-bar-container {
     width: 95%;
+    top: 9vh;
+  }
+
+  .search-input {
+    padding: 10px 40px 10px 16px;
+    font-size: 15px;
+  }
+
+  .search-icon {
+    width: 16px;
+    height: 16px;
+    right: 10px;
   }
 
   .user-profile-content,
   .modal-content {
     width: 95%;
     margin: 0 auto;
+  }
+}
+
+/* Landscape mode adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+  .top-banner {
+    height: 12vh;
+    min-height: 50px;
+  }
+
+  .search-bar-container {
+    top: 15vh;
   }
 }

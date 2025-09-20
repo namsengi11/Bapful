@@ -63,36 +63,31 @@ const BapfulMap = ({
         markersRef.current = [];
 
         // Add markers for places
+        if (places == null || places.length == 0) return;
+
         const markers = {}
         const infoWindows = {}
-        console.log(places[0])
-        const marker = new window.kakao.maps.Marker({
-          position: new window.kakao.maps.LatLng(places[0].latitude, places[0].longitude)
+
+        places.forEach((place, index) => {
+          markers['marker' + index] = new window.kakao.maps.Marker({
+            position: new window.kakao.maps.LatLng(place.latitude, place.longitude)
+          });
+          markers['marker' + index].setMap(map);
+          markersRef.current.push(markers['marker' + index]);
+
+          // Create info window
+          infoWindows['infoWindow' + index] = new window.kakao.maps.InfoWindow({
+            content: `<div style="padding:5px; font-size:12px;">${place.name}</div>`
+          });
+
+          // Add click event
+          window.kakao.maps.event.addListener(markers['marker' + index], 'click', function() {
+            infoWindows['infoWindow' + index].open(map, markers['marker' + index]);
+            if (onPlaceClick) {
+              onPlaceClick(place);
+            }
+          });
         });
-        marker.setMap(map);
-        markersRef.current.push(marker);
-
-        // places.forEach((place, index) => {
-        //   markers['marker' + index] = new window.kakao.maps.Marker({
-        //     position: new window.kakao.maps.LatLng(place.latitude, place.longitude)
-        //   });
-        //   markers['marker' + index].setMap(map);
-        //   markersRef.current.push(markers['marker' + index]);
-
-        //   // Create info window
-        //   infoWindows['infoWindow' + index] = new window.kakao.maps.InfoWindow({
-        //     content: `<div style="padding:5px; font-size:12px;">${place.name}</div>`
-        //   });
-
-        //   // Add click event
-        //   window.kakao.maps.event.addListener(markers['marker' + index], 'click', function() {
-        //     infoWindows['infoWindow' + index].open(map, markers['marker' + index]);
-        //     if (onPlaceClick) {
-        //       onPlaceClick(place);
-        //     }
-        //   });
-        // });
-        console.log(places)
         console.log('Map rendered successfully');
       } catch (error) {
         console.error('Error rendering map:', error);

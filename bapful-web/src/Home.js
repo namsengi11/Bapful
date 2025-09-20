@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import BapfulMap from './BapfulMap';
+import colors from './colors';
 import './Home.css';
 
 // Place class definition (converted from React Native)
 class Place {
-  constructor(id, name, address, latitude, longitude, category, rating, reviews) {
+  constructor(id, name, address, latitude, longitude, location_type, avg_rating, review_count) {
     this.id = id;
     this.name = name;
     this.address = address;
     this.latitude = latitude;
     this.longitude = longitude;
-    this.category = category;
-    this.rating = rating;
-    this.reviews = reviews;
+    this.location_type = location_type;
+    this.rating = avg_rating;
+    this.reviews = review_count;
   }
 
   static fromAPIResponse(data) {
@@ -20,11 +21,11 @@ class Place {
       data.id,
       data.name,
       data.address,
-      data.latitude,
-      data.longitude,
-      data.category,
-      data.rating,
-      data.reviews
+      data.coordinates.lat,
+      data.coordinates.lng,
+      data.location_type,
+      data.avg_rating,
+      data.review_count
     );
   }
 }
@@ -100,7 +101,6 @@ export default function Home() {
         `http://bapful.sjnam.site/api/locations?lat=${currentLocation?.latitude}&lng=${currentLocation?.longitude}&radius=2000`
       );
       const data = await response.json();
-
       const places = data.map((place) => Place.fromAPIResponse(place));
       setPlaces(places);
     } catch (error) {
@@ -128,25 +128,40 @@ export default function Home() {
       {/* Top Banner */}
       <div className="top-banner">
         <div className="top-banner-content">
-          <h1>Bapful</h1>
+          <img
+            src="/assets/bapful_logo.png"
+            alt="Bapful"
+            className="bapful-logo"
+          />
           <button
             className="profile-button"
             onClick={toggleUserProfile}
           >
-            Profile
+            <img
+              src="/assets/user.png"
+              alt="Profile"
+              className="profile-icon"
+            />
           </button>
         </div>
       </div>
 
       {/* Search Bar */}
       <div className="search-bar-container">
-        <input
-          type="text"
-          placeholder="Search places..."
-          value={searchKeyword}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="search-input"
-        />
+        <div className="search-input-wrapper">
+          <input
+            type="text"
+            placeholder="Find your perfect Korean meal!"
+            value={searchKeyword}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="search-input"
+          />
+          <img
+            src="/assets/search_icon.png"
+            alt="Search"
+            className="search-icon"
+          />
+        </div>
       </div>
 
       {/* Map Container */}
