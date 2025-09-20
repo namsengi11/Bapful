@@ -1,0 +1,40 @@
+.bapful-map-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.bapful-map {
+  width: '500px';
+  height: '500px';
+  border: none;
+  outline: none;
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  .bapful-map-container {
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100); /* Handle mobile viewport issues */
+  }
+
+  /* Ensure touch interactions work properly on mobile */
+  .bapful-map {
+    touch-action: pan-x pan-y;
+  }
+}
+
+@media (max-width: 480px) {
+  .bapful-map-container {
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+  }
+}
+
+/* Handle orientation changes */
+@media (orientation: landscape) and (max-height: 500px) {
+  .bapful-map-container {
+    height: 100vh;
+  }
+}
