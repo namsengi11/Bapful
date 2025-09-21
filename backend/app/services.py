@@ -27,7 +27,11 @@ class LocationService:
   """Service for location-related operations"""
 
   # Use area based search for now
-  tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/areaBasedList1?serviceKey={settings.tourapiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=11&signguCd=11110&_type=json"
+  # Use area based search for now
+  tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/areaBasedList1?serviceKey={settings.tourapiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=51&signguCd=51130&_type=json"
+
+  kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json"
+
 
   kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json"
   kakaoAPIQuery = [
@@ -130,11 +134,9 @@ class LocationService:
 
   @staticmethod
   def getNearbyLocations(db: Session, lat: float, lng: float, radius: int = 1000) -> List[dict]:
-    """Get locations within radius with average ratings"""
-    # Query the database for locations within radius (simple in-Python filter for SQLite)
+    """Get locations within radius with average ratings (simple in-Python filter)."""
     locations = db.query(Location).all()
-    db_results: List[dict] = []
-    
+    results: List[dict] = []
     for loc in locations:
       distance = calculateDistance(lat, lng, loc.latitude, loc.longitude)
       if distance <= radius:
@@ -145,7 +147,7 @@ class LocationService:
           avg_rating = sum(r.rating for r in review_q) / review_count
         else:
           avg_rating = 0.0
-        db_results.append({
+        results.append({
           "id": loc.id,
           "name": loc.name,
           "location_type": loc.location_type,
@@ -153,16 +155,27 @@ class LocationService:
           "avg_rating": round(avg_rating, 2),
           "review_count": review_count
         })
+    return results
 
-    # Get external API locations
+
+    """Get locations within radius with average ratings"""
+    # Query the database for locations within radius
+    locations = db.query(Location).filter(
+      func.sqrt(
+        (Location.latitude - lat) * (Location.latitude - lat) + (Location.longitude - lng) * (Location.longitude - lng)
+      ) <= radius
+    ).all()
+
     kakaoLocations = LocationService.getKakaoLocations(lat, lng, radius)
     tourAPILocations = LocationService.getTourAPILocations(lat, lng, radius)
 
-    # Combine all results
-    all_locations = db_results + kakaoLocations + tourAPILocations
-    print(all_locations)
+    # Async save result to db
+    locations = locations + kakaoLocations + tourAPILocations
+    print(locations)
 
-    return all_locations
+    return locations
+
+
 
   @staticmethod
   def getLocationReviews(

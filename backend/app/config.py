@@ -5,18 +5,23 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database
-    databaseUrl: str
+    DATABASE_URL: str = "sqlite:///./bapful.db"
+    # 과거 camelCase 호환
+    databaseUrl: str | None = None
 
-    # Tour API
-    tourapiKey: str
+    SEED_DUMMY: bool = False  # 필요 시 .env 에 SEED_DUMMY=true
+
 
     # JWT
-    jwtSecretKey: str
-    jwtAlgorithm: str
-    jwtExpirationMinutes: int
-    
+    jwtSecretKey: str = secrets.token_urlsafe(32)
+    jwtAlgorithm: str = "HS256"
+    jwtExpirationMinutes: int = 20
+
+    # Tour API
+    tourapiKey: str = ""
+
     # Kakao Map API
-    kakaomap_restapi_key: str
+    kakaomap_restapi_key: str = ""
 
     # File Storage
     uploadsDir: str = "uploads"
