@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, memo } from 'react';
 import './BapfulMap.css';
 
 const { kakao } = window;
 
-const BapfulMap = ({
+const BapfulMap = memo(({
   currentLocation,
   places = [],
   onPlaceClick
@@ -49,6 +49,11 @@ const BapfulMap = ({
         return;
       }
 
+      function setCenter(map, lat, lng) {
+        var moveLatLon = new window.kakao.maps.LatLng(lat, lng);
+        map.setCenter(moveLatLon);
+      }
+
       try {
         const mapOption = {
           center: new window.kakao.maps.LatLng(currentLocation.latitude, currentLocation.longitude),
@@ -62,6 +67,15 @@ const BapfulMap = ({
         markersRef.current.forEach(marker => marker.setMap(null));
         markersRef.current = [];
 
+        // Map of corresponding pin image for place type
+        const placeTypeImageMap = {
+          '음식점': 'http://bapful.sjnam.site/static/restaurant.png',
+          '카페': 'http://bapful.sjnam.site/static/cafe.png',
+          '문화시설': 'http://bapful.sjnam.site/static/tourist_destination.png',
+          '쇼핑': 'http://bapful.sjnam.site/static/tourist_destination.png',
+          '관광지': 'http://bapful.sjnam.site/static/tourist_destination.png',
+        };
+
         // Add markers for places
         if (places == null || places.length == 0) return;
 
@@ -69,8 +83,13 @@ const BapfulMap = ({
         const infoWindows = {}
 
         places.forEach((place, index) => {
+          var imageSrc = placeTypeImageMap[place.type] || 'http://bapful.sjnam.site/static/restaurant.png'
+          var imageSize = new window.kakao.maps.Size(85, 85);
+          var markerImage = new window.kakao.maps.MarkerImage(imageSrc, imageSize);
+
           markers['marker' + index] = new window.kakao.maps.Marker({
-            position: new window.kakao.maps.LatLng(place.latitude, place.longitude)
+            position: new window.kakao.maps.LatLng(place.latitude, place.longitude),
+            image: markerImage
           });
           markers['marker' + index].setMap(map);
           markersRef.current.push(markers['marker' + index]);
@@ -86,6 +105,8 @@ const BapfulMap = ({
             if (onPlaceClick) {
               onPlaceClick(place);
             }
+            // Set map center to the clicked place
+            setCenter(map, place.latitude, place.longitude);
           });
         });
         console.log('Map rendered successfully');
@@ -125,6 +146,6 @@ const BapfulMap = ({
       />
     </div>
   );
-};
+});
 
 export default BapfulMap;

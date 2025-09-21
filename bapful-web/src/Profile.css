@@ -1,0 +1,243 @@
+/* User Profile Display Overlay */
+.user-profile-overlay {
+  position: fixed;
+  top: 10vh; /* Start below the top banner */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500; /* Lower than top banner */
+}
+
+.user-profile-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Background Image */
+.profile-background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+/* Close Button */
+.profile-close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  color: var(--gray);
+  cursor: pointer;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.profile-close-button:hover {
+  background: var(--white);
+  color: var(--bright-border);
+  transform: scale(1.1);
+}
+
+
+/* Profile Message Display */
+.profile-message-display {
+  position: absolute;
+  top: 15%;
+  left: 10%;
+  right: 10%;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 15px;
+  border-radius: 10px;
+  z-index: 10;
+  text-align: center;
+}
+
+.profile-message-text {
+  font-size: 16px;
+  color: var(--gray);
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Food Coordinates */
+.food-coordinate {
+  position: absolute;
+  width: 13vh;
+  height: 13vh;
+  max-width: 100px;
+  max-height: 100px;
+  min-width: 60px;
+  min-height: 60px;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-food-image {
+  width: 110%;
+  height: 90%;
+  object-fit: contain;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.table-food-image {
+  width: 230%;
+  object-fit: contain;
+  border-radius: 50%;
+  padding: 5px;
+}
+
+/* Action Button Container */
+.profile-action-container {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+}
+
+.profile-action-button {
+  background-color: var(--bright-border);
+  color: var(--white);
+  border: none;
+  padding: 20px 40px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(158, 79, 4, 0.3);
+}
+
+.profile-action-button:hover {
+  background-color: #8a4103;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(158, 79, 4, 0.4);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .user-profile-overlay {
+    top: 8vh; /* Adjust for smaller mobile banner */
+  }
+
+  .profile-close-button {
+    top: 15px;
+    right: 15px;
+    width: 35px;
+    height: 35px;
+    font-size: 20px;
+  }
+
+  .profile-message-display {
+    top: 12%;
+    left: 5%;
+    right: 5%;
+    padding: 12px;
+  }
+
+  .profile-message-text {
+    font-size: 14px;
+  }
+
+  .food-coordinate {
+    width: 10vh;
+    height: 10vh;
+    max-width: 80px;
+    max-height: 80px;
+    min-width: 50px;
+    min-height: 50px;
+  }
+
+  .profile-action-button {
+    padding: 16px 32px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-profile-overlay {
+    top: 7vh; /* Adjust for smallest mobile banner */
+  }
+
+  .profile-close-button {
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+  }
+
+  .profile-message-display {
+    top: 10%;
+    left: 5%;
+    right: 5%;
+    padding: 10px;
+  }
+
+  .profile-message-text {
+    font-size: 13px;
+  }
+
+  .food-coordinate {
+    width: 8vh;
+    height: 8vh;
+    max-width: 60px;
+    max-height: 60px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .profile-action-button {
+    padding: 14px 28px;
+    font-size: 13px;
+    bottom: 20px;
+  }
+}
+
+/* Landscape Mode */
+@media (orientation: landscape) and (max-height: 500px) {
+  .food-coordinate {
+    width: 8vw;
+    height: 8vw;
+    max-width: 60px;
+    max-height: 60px;
+  }
+
+  .profile-message-display {
+    top: 10%;
+    padding: 8px;
+  }
+
+  .profile-action-button {
+    bottom: 15px;
+    padding: 12px 24px;
+    font-size: 12px;
+  }
+}

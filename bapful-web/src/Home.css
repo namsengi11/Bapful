@@ -25,7 +25,7 @@
   right: 0;
   height: 10vh;
   background-color: var(--primary-color);
-  z-index: 1000;
+  z-index: 3000;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -308,6 +308,7 @@
   .top-banner {
     height: 8vh;
     min-height: 60px;
+    z-index: 3000;
   }
 
   .bapful-logo {
@@ -348,6 +349,7 @@
   .top-banner {
     height: 7vh;
     min-height: 55px;
+    z-index: 3000;
   }
 
   .top-banner-content {
@@ -395,6 +397,7 @@
   .top-banner {
     height: 12vh;
     min-height: 50px;
+    z-index: 3000;
   }
 
   .search-bar-container {

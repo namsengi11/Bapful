@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import BapfulMap from './BapfulMap';
+import Profile from './Profile';
 import colors from './colors';
 import './Home.css';
 
@@ -39,6 +40,7 @@ export default function Home() {
   const [searchedPlaces, setSearchedPlaces] = useState([]);
   const [showPlaceResultPage, setShowPlaceResultPage] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [locationLoading, setLocationLoading] = useState(true);
 
   useEffect(() => {
@@ -59,6 +61,10 @@ export default function Home() {
 
   const toggleUserProfile = () => {
     setShowUserProfile(!showUserProfile);
+  };
+
+  const toggleProfile = () => {
+    setShowProfile(!showProfile);
   };
 
   const getCurrentLocation = async () => {
@@ -135,7 +141,7 @@ export default function Home() {
           />
           <button
             className="profile-button"
-            onClick={toggleUserProfile}
+            onClick={toggleProfile}
           >
             <img
               src="/assets/user.png"
@@ -260,6 +266,26 @@ export default function Home() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* User Profile Modal */}
+      {showProfile && (
+        <Profile
+          myProfile={true}
+          user={{
+            name: "Your Name",
+            statusMessage: "Welcome to my food journey!",
+            backgroundImage: "/assets/backgrounds/namsan_tower.png",
+            foodImages: [
+              "/assets/foods/bossam.png",
+              "/assets/foods/japchae.png",
+              "/assets/foods/samgyetang.png",
+              "/assets/foods/soondubu.png",
+              "/assets/foods/tbk.png"
+            ]
+          }}
+          onClose={toggleProfile}
+        />
       )}
     </div>
   );

@@ -1,0 +1,284 @@
+/* Edit Profile Overlay */
+.edit-profile-overlay {
+  position: fixed;
+  top: 10vh; /* Start below the top banner */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2500; /* Higher than profile but lower than top banner */
+  padding: 20px;
+}
+
+.edit-profile-container {
+  background-color: var(--primary-color);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh; /* Reduced to account for top banner */
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(158, 79, 4, 0.3);
+  position: relative;
+}
+
+/* Section Styling */
+.edit-message-section,
+.edit-background-section,
+.edit-food-section {
+  background-color: var(--secondary-color);
+  margin: 10px;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.edit-section-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--black);
+  margin: 0 0 12px 0;
+}
+
+/* Message Input */
+.edit-message-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--tertiary-color);
+  border-radius: 8px;
+  background-color: var(--white);
+  color: var(--black);
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.edit-message-input:focus {
+  border-color: var(--bright-border);
+  box-shadow: 0 0 0 2px rgba(158, 79, 4, 0.1);
+}
+
+.edit-character-count {
+  text-align: right;
+  font-size: 12px;
+  color: var(--gray);
+  margin-top: 4px;
+}
+
+/* Scrollable Sections */
+.edit-background-scroll,
+.edit-food-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 12px;
+  padding: 8px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--tertiary-color) transparent;
+}
+
+.edit-background-scroll::-webkit-scrollbar,
+.edit-food-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.edit-background-scroll::-webkit-scrollbar-track,
+.edit-food-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.edit-background-scroll::-webkit-scrollbar-thumb,
+.edit-food-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--tertiary-color);
+  border-radius: 2px;
+}
+
+/* Background Options */
+.edit-background-option {
+  min-width: 120px;
+  height: 120px;
+  border-radius: 60px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.edit-background-option:hover {
+  transform: scale(1.05);
+}
+
+.edit-background-option.selected {
+  border-color: var(--bright-border);
+  box-shadow: 0 4px 12px rgba(158, 79, 4, 0.3);
+}
+
+.edit-background-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Food Options */
+.edit-food-option {
+  min-width: 120px;
+  height: 120px;
+  border-radius: 60px;
+  background-color: var(--white);
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.edit-food-option:hover {
+  transform: scale(1.05);
+  border-color: var(--tertiary-color);
+}
+
+.edit-food-option.selected {
+  border-color: var(--bright-border);
+  box-shadow: 0 4px 12px rgba(158, 79, 4, 0.3);
+  background-color: rgba(158, 79, 4, 0.1);
+}
+
+.edit-food-image {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+}
+
+.edit-selection-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: var(--bright-border);
+  color: var(--white);
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.edit-selection-count {
+  text-align: center;
+  font-size: 14px;
+  color: var(--gray);
+  margin-top: 8px;
+}
+
+/* Button Container */
+.edit-button-container {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  justify-content: center;
+}
+
+.edit-cancel-button,
+.edit-confirm-button {
+  flex: 1;
+  max-width: 150px;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-cancel-button {
+  background-color: var(--gray);
+  color: var(--white);
+}
+
+.edit-cancel-button:hover {
+  background-color: #999;
+  transform: translateY(-1px);
+}
+
+.edit-confirm-button {
+  background-color: var(--bright-border);
+  color: var(--white);
+}
+
+.edit-confirm-button:hover {
+  background-color: #8a4103;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(158, 79, 4, 0.3);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .edit-profile-overlay {
+    padding: 10px;
+    top: 8vh; /* Adjust for smaller mobile banner */
+  }
+
+  .edit-profile-container {
+    max-width: 100%;
+    max-height: 85vh; /* Adjust for mobile banner */
+  }
+
+  .edit-background-option,
+  .edit-food-option {
+    min-width: 100px;
+    height: 100px;
+    border-radius: 50px;
+  }
+
+  .edit-section-title {
+    font-size: 16px;
+  }
+
+  .edit-message-input {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .edit-profile-overlay {
+    padding: 5px;
+    top: 7vh; /* Adjust for smallest mobile banner */
+  }
+
+  .edit-background-option,
+  .edit-food-option {
+    min-width: 80px;
+    height: 80px;
+    border-radius: 40px;
+  }
+
+  .edit-selection-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    font-size: 12px;
+    top: 4px;
+    right: 4px;
+  }
+
+  .edit-button-container {
+    padding: 15px;
+    gap: 8px;
+  }
+
+  .edit-cancel-button,
+  .edit-confirm-button {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
