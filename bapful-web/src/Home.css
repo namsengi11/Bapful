@@ -204,7 +204,19 @@
 }
 
 .modal-content.search-results {
-  max-height: 60vh;
+  max-height: 80vh;
+  padding: 0;
+}
+
+.modal-content.search-results .modal-header {
+  padding: 8px 20px;
+  min-height: auto;
+}
+
+.modal-content.search-results .modal-body {
+  padding: 0;
+  max-height: 70vh;
+  overflow: hidden;
 }
 
 .modal-header {

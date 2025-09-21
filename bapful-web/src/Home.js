@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import BapfulMap from './BapfulMap';
 import Profile from './Profile';
+import PlaceResultPage from './PlaceResultPage';
+import { getCurrentUser, logout } from './services/api';
 import colors from './colors';
 import './Home.css';
 
@@ -32,6 +35,8 @@ class Place {
 }
 
 export default function Home() {
+  const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(null);
   const [currentLocation, setCurrentLocation] = useState({ latitude: 37.593371, longitude: 127.01673 });
   const [places, setPlaces] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
@@ -44,6 +49,10 @@ export default function Home() {
   const [locationLoading, setLocationLoading] = useState(true);
 
   useEffect(() => {
+    // Get current user info
+    const user = getCurrentUser();
+    setCurrentUser(user);
+
     getCurrentLocation();
   }, []);
 
@@ -53,11 +62,6 @@ export default function Home() {
     }
   }, [currentLocation]);
 
-  useEffect(() => {
-    if (searchedPlaces.length > 0 || searchKeyword) {
-      setShowPlaceResultPage(true);
-    }
-  }, [searchedPlaces, searchKeyword]);
 
   const toggleUserProfile = () => {
     setShowUserProfile(!showUserProfile);
@@ -65,6 +69,17 @@ export default function Home() {
 
   const toggleProfile = () => {
     setShowProfile(!showProfile);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if logout fails, redirect to login
+      navigate('/login', { replace: true });
+    }
   };
 
   const getCurrentLocation = async () => {
@@ -121,12 +136,12 @@ export default function Home() {
 
   const handleSearch = (keyword) => {
     setSearchKeyword(keyword);
-    // Implement search logic here
-    // For now, just filtering existing places
-    const filtered = places.filter(place =>
-      place.name.toLowerCase().includes(keyword.toLowerCase())
-    );
-    setSearchedPlaces(filtered);
+    // PlaceResultPage will handle the actual API search
+    if (keyword.trim()) {
+      setShowPlaceResultPage(true);
+    } else {
+      setShowPlaceResultPage(false);
+    }
   };
 
   return (
@@ -229,12 +244,11 @@ export default function Home() {
         </div>
       )}
 
-      {/* Search Results Modal */}
+      {/* Search Results Page */}
       {showPlaceResultPage && (
         <div className="modal-overlay" onClick={() => setShowPlaceResultPage(false)}>
           <div className="modal-content search-results" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Search Results for "{searchKeyword}"</h3>
               <button
                 className="close-button"
                 onClick={() => setShowPlaceResultPage(false)}
@@ -243,26 +257,15 @@ export default function Home() {
               </button>
             </div>
             <div className="modal-body">
-              {searchedPlaces.length > 0 ? (
-                <div className="search-results-list">
-                  {searchedPlaces.map((place) => (
-                    <div
-                      key={place.id}
-                      className="search-result-item"
-                      onClick={() => {
-                        setSelectedPlace(place);
-                        setShowPlaceResultPage(false);
-                        setShowPlaceDetail(true);
-                      }}
-                    >
-                      <h4>{place.name}</h4>
-                      <p>{place.address}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p>No results found for "{searchKeyword}"</p>
-              )}
+              <PlaceResultPage
+                searchKeyword={searchKeyword}
+                currentLocation={currentLocation}
+                onPlaceClick={(place) => {
+                  setSelectedPlace(place);
+                  setShowPlaceResultPage(false);
+                  setShowPlaceDetail(true);
+                }}
+              />
             </div>
           </div>
         </div>
@@ -273,7 +276,7 @@ export default function Home() {
         <Profile
           myProfile={true}
           user={{
-            name: "Your Name",
+            name: currentUser?.name || "Your Name",
             statusMessage: "Welcome to my food journey!",
             backgroundImage: "/assets/backgrounds/namsan_tower.png",
             foodImages: [
@@ -285,6 +288,7 @@ export default function Home() {
             ]
           }}
           onClose={toggleProfile}
+          onLogout={handleLogout}
         />
       )}
     </div>

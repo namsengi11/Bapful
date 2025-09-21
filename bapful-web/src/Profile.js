@@ -17,7 +17,8 @@ const Profile = ({
       "/assets/foods/tbk.png"
     ]
   },
-  onClose
+  onClose,
+  onLogout
 }) => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState(user.statusMessage);
@@ -83,12 +84,22 @@ const Profile = ({
         {/* Action Button */}
         <div className="profile-action-container">
           {myProfile ? (
-            <button
-              className="profile-action-button"
-              onClick={toggleProfileEdit}
-            >
-              Edit Profile
-            </button>
+            <div className="profile-action-buttons">
+              <button
+                className="profile-action-button"
+                onClick={toggleProfileEdit}
+              >
+                Edit Profile
+              </button>
+              {onLogout && (
+                <button
+                  className="profile-logout-button"
+                  onClick={onLogout}
+                >
+                  Logout
+                </button>
+              )}
+            </div>
           ) : (
             <button
               className="profile-action-button"

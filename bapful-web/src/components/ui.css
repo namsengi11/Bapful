@@ -1,0 +1,318 @@
+/* UI Color Variables */
+:root {
+  --ui-primary-main: #FF6B35;
+  --ui-primary-dark: #E55A2E;
+  --ui-primary-light: #FF8A5B;
+  --ui-primary-gradient: linear-gradient(135deg, #FF6B35 0%, #E55A2E 100%);
+
+  --ui-background-primary: #F5F3F0;
+  --ui-background-secondary: #FFFFFF;
+  --ui-background-card: #FFFFFF;
+  --ui-background-input: #FFFFFF;
+
+  --ui-text-primary: #333333;
+  --ui-text-secondary: #666666;
+  --ui-text-light: #999999;
+  --ui-text-placeholder: #BBBBBB;
+  --ui-text-white: #FFFFFF;
+
+  --ui-border: #E0E0E0;
+  --ui-hover: #F0F0F0;
+  --ui-disabled: #F5F5F5;
+
+  --ui-error: #FF4444;
+  --ui-success: #4CAF50;
+  --ui-warning: #FFA726;
+  --ui-info: #2196F3;
+}
+
+/* ---------------- Layout Components ---------------- */
+.ui-container {
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--ui-background-primary);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.ui-scroll-container {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.ui-content-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ---------------- Card Components ---------------- */
+.ui-card {
+  background: var(--ui-background-card);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ui-form-card {
+  background: var(--ui-background-card);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 16px;
+  margin-top: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border: none;
+}
+
+/* ---------------- Button Components ---------------- */
+.ui-button {
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  box-sizing: border-box;
+}
+
+.ui-button--primary {
+  background: var(--ui-primary-gradient);
+  color: var(--ui-text-white);
+}
+
+.ui-button--primary:hover:not(.ui-button--disabled) {
+  background: var(--ui-primary-dark);
+}
+
+.ui-button--secondary {
+  background: var(--ui-background-secondary);
+  color: var(--ui-text-primary);
+}
+
+.ui-button--secondary:hover:not(.ui-button--disabled) {
+  background: var(--ui-hover);
+}
+
+.ui-button--outline {
+  background: transparent;
+  color: var(--ui-primary-main);
+  border: 2px solid var(--ui-primary-main);
+}
+
+.ui-button--outline:hover:not(.ui-button--disabled) {
+  background: var(--ui-primary-main);
+  color: var(--ui-text-white);
+}
+
+.ui-button--full-width {
+  width: 100%;
+}
+
+.ui-button--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ui-button:active:not(.ui-button--disabled) {
+  transform: translateY(1px);
+}
+
+/* ---------------- Input Components ---------------- */
+.ui-input {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid var(--ui-border);
+  border-radius: 12px;
+  font-size: 16px;
+  background: var(--ui-background-input);
+  color: var(--ui-text-primary);
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.ui-input:focus {
+  outline: none;
+  border-color: var(--ui-primary-main);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.ui-input::placeholder {
+  color: var(--ui-text-placeholder);
+}
+
+.ui-input--error {
+  border-color: var(--ui-error);
+}
+
+.ui-input--error:focus {
+  border-color: var(--ui-error);
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.ui-input--disabled {
+  background: var(--ui-disabled);
+  cursor: not-allowed;
+}
+
+.ui-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.ui-input-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ui-text-primary);
+  margin-left: 4px;
+}
+
+.ui-input-error {
+  font-size: 12px;
+  color: var(--ui-error);
+  margin-left: 4px;
+}
+
+/* ---------------- Text Components ---------------- */
+.ui-text {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ui-link {
+  color: var(--ui-primary-main);
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.ui-link:hover {
+  color: var(--ui-primary-dark);
+  text-decoration: underline;
+}
+
+/* ---------------- Logo Components ---------------- */
+.ui-logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 40px 0 20px 0;
+}
+
+.ui-logo-image {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  margin-bottom: 16px;
+}
+
+.ui-logo-text {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--ui-primary-main);
+  margin: 0;
+  text-align: center;
+}
+
+/* ---------------- Loading Components ---------------- */
+.ui-loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--ui-border);
+  border-top: 3px solid var(--ui-primary-main);
+  border-radius: 50%;
+  animation: ui-spin 1s linear infinite;
+}
+
+@keyframes ui-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ---------------- Divider Components ---------------- */
+.ui-or-divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.ui-or-divider::before,
+.ui-or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ui-border);
+}
+
+.ui-or-divider span {
+  padding: 0 16px;
+  color: var(--ui-text-secondary);
+  font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .ui-container {
+    max-width: 100%;
+  }
+
+  .ui-scroll-container {
+    padding: 15px;
+  }
+
+  .ui-content-container {
+    padding: 0 16px;
+  }
+
+  .ui-button {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+
+  .ui-input {
+    padding: 14px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+@media (max-width: 480px) {
+  .ui-scroll-container {
+    padding: 10px;
+  }
+
+  .ui-content-container {
+    padding: 0 12px;
+  }
+
+  .ui-form-card {
+    padding: 20px;
+  }
+
+  .ui-logo-image {
+    width: 100px;
+    height: 100px;
+  }
+
+  .ui-logo-text {
+    font-size: 28px;
+  }
+}
