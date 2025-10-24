@@ -19,6 +19,7 @@ class Settings(BaseSettings):
 
     # Tour API
     tourapiKey: str = ""
+    tourapiMandatoryKey: str = ""
 
     # Kakao Map API
     kakaomap_restapi_key: str = ""

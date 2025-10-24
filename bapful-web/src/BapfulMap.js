@@ -18,6 +18,7 @@ const BapfulMap = memo(({
 
   useEffect(() => {
     const script = document.createElement('script');
+    script.type = 'text/javascript';
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&libraries=services,drawing&autoload=false`;
     script.id = "kakao-map-script";
     script.async = true;

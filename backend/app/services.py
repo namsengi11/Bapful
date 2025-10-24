@@ -29,6 +29,7 @@ class LocationService:
   # Use area based search for now
   # Use area based search for now
   tourAPIUrl = f"http://apis.data.go.kr/B551011/TarRlteTarService1/areaBasedList1?serviceKey={settings.tourapiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&baseYm=202503&areaCd=51&signguCd=51130&_type=json"
+  tourAPIMandatoryUrl = f'https://apis.data.go.kr/B551011/EngService2/areaCode2?MobileOS=ETC&MobileApp=Bapful&serviceKey={settings.tourapiMandatoryKey}'
 
   kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json"
 
@@ -83,7 +84,7 @@ class LocationService:
   @staticmethod
   def getTourAPILocations(lat: float, lng: float, radius: int = 1000) -> dict:
     """Get locations from tour API"""
-
+    response = requests.get(LocationService.tourAPIMandatoryUrl).json()
     # Logic to get area code for API from lat, lng
     response = requests.get(LocationService.tourAPIUrl).json()
     try:
