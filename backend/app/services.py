@@ -156,23 +156,19 @@ class LocationService:
           "avg_rating": round(avg_rating, 2),
           "review_count": review_count
         })
-    return results
 
-
-    """Get locations within radius with average ratings"""
-    # Query the database for locations within radius
-    locations = db.query(Location).filter(
-      func.sqrt(
-        (Location.latitude - lat) * (Location.latitude - lat) + (Location.longitude - lng) * (Location.longitude - lng)
-      ) <= radius
-    ).all()
+    # """Get locations within radius with average ratings"""
+    # # Query the database for locations within radius
+    # locations = db.query(Location).filter(
+    #   func.sqrt(
+    #     (Location.latitude - lat) * (Location.latitude - lat) + (Location.longitude - lng) * (Location.longitude - lng)
+    #   ) <= radius
+    # ).all()
 
     kakaoLocations = LocationService.getKakaoLocations(lat, lng, radius)
     tourAPILocations = LocationService.getTourAPILocations(lat, lng, radius)
 
-    # Async save result to db
-    locations = locations + kakaoLocations + tourAPILocations
-    print(locations)
+    locations = results + kakaoLocations + tourAPILocations
 
     return locations
 
