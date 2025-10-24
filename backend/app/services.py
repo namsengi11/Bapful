@@ -88,19 +88,24 @@ class LocationService:
     try:
       items = response['response']['body']['items']['item']
     except:
-      raise HTTPException(status_code=500, detail="Failed to get locations from tour API")
+      print("Tour API: No items found or invalid response structure")
+      return []
     result = []
     for item in items:
       if item['rlteCtgryLclsNm'] != "음식":
         continue
       # Extract name and find coordinates
       name = item['rlteTatsNm']
-      coordinates = LocationService.getCoordFromKakao(name)
-      item['x'] = coordinates[1]
-      item['y'] = coordinates[0]
-      item['address'] = coordinates[2]
-      tourLocation = TourAPILocation.fromTourAPIResult(item)
-      result.append(tourLocation)
+      try:
+        coordinates = LocationService.getCoordFromKakao(name)
+        item['x'] = coordinates[1]
+        item['y'] = coordinates[0]
+        item['address'] = coordinates[2]
+        tourLocation = TourAPILocation.fromTourAPIResult(item)
+        result.append(tourLocation)
+      except Exception as e:
+        print(f"Failed to get coordinates for {name}: {e}")
+        continue
 
     resultToLocationResponse = [LocationResponse.model_validate(location) for location in result]
 
@@ -126,12 +131,21 @@ class LocationService:
   @staticmethod
   def getCoordFromKakao(queryName: str) -> Tuple[float, float, str]:
     """Get coordinates from Kakao API"""
-    queryUrl = LocationService.kakaoAPIUrl + LocationService.kakaoAPIQuery[0] + queryName + LocationService.kakaoAPIQuery[1]
+    queryUrl = f"{LocationService.kakaoAPIUrl}?query={queryName}"
     response = requests.get(
       queryUrl,
       headers={"Authorization": f"KakaoAK {settings.kakaomap_restapi_key}"}
     )
-    return response.json()["documents"][0]["y"], response.json()["documents"][0]["x"], response.json()["documents"][0]["address_name"]
+
+    if response.status_code != 200:
+        raise Exception(f"Kakao API returned status {response.status_code}")
+
+    data = response.json()
+    if not data.get("documents") or len(data["documents"]) == 0:
+        raise Exception("No location found for query")
+
+    doc = data["documents"][0]
+    return float(doc["y"]), float(doc["x"]), doc["address_name"]
 
   @staticmethod
   def getNearbyLocations(db: Session, lat: float, lng: float, radius: int = 1000) -> List[dict]:
@@ -165,8 +179,21 @@ class LocationService:
     #   ) <= radius
     # ).all()
 
-    kakaoLocations = LocationService.getKakaoLocations(lat, lng, radius)
-    tourAPILocations = LocationService.getTourAPILocations(lat, lng, radius)
+    # Add minimal error handling to prevent 500 errors
+    kakaoLocations = []
+    tourAPILocations = []
+
+    try:
+        kakaoLocations = LocationService.getKakaoLocations(lat, lng, radius)
+    except Exception as e:
+        print(f"Kakao API failed: {e}")
+        kakaoLocations = []
+
+    try:
+        tourAPILocations = LocationService.getTourAPILocations(lat, lng, radius)
+    except Exception as e:
+        print(f"Tour API failed: {e}")
+        tourAPILocations = []
 
     locations = results + kakaoLocations + tourAPILocations
 
