@@ -39,3 +39,9 @@ yarn-error.*
 *.tsbuildinfo
 
 %ProgramData%/
+
+# static files
+bapful-web/src/assets/
+bapful-web/src/static/
+
+public/
