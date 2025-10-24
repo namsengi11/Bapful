@@ -33,8 +33,6 @@ class LocationService:
 
   kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json"
 
-
-  kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json"
   kakaoAPIQuery = [
     "?query=",
     "&x=",
@@ -111,7 +109,9 @@ class LocationService:
   @staticmethod
   def getKakaoLocations(lat: float, lng: float, radius: int = 1000, query: str = "음식") -> List[dict]:
     """Get locations from Kakao API"""
-    queryUrl = LocationService.kakaoAPIUrl + LocationService.kakaoAPIQuery[0] + query + LocationService.kakaoAPIQuery[1] + str(lat) + LocationService.kakaoAPIQuery[2] + str(radius)
+    # Fix URL construction: y=lat, x=lng, add radius parameter
+    queryUrl = f"{LocationService.kakaoAPIUrl}?query={query}&y={lat}&x={lng}&radius={radius}"
+    print(f"Kakao API URL: {queryUrl}")
     response = requests.get(
       queryUrl,
       headers={"Authorization": f"KakaoAK {settings.kakaomap_restapi_key}"}
