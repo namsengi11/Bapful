@@ -33,12 +33,6 @@ class LocationService:
 
   kakaoAPIUrl = "https://dapi.kakao.com/v2/local/search/keyword.json"
 
-  kakaoAPIQuery = [
-    "?query=",
-    "&x=",
-    "&y=",
-    "&radius="
-  ]
 
   @staticmethod
   def getLocation(db: Session, locationId: str) -> dict:
@@ -104,7 +98,7 @@ class LocationService:
         tourLocation = TourAPILocation.fromTourAPIResult(item)
         result.append(tourLocation)
       except Exception as e:
-        print(f"Failed to get coordinates for {name}: {e}")
+        print(f"Tour API: Failed to get coordinates for '{name}': {e}")
         continue
 
     resultToLocationResponse = [LocationResponse.model_validate(location) for location in result]
@@ -115,8 +109,7 @@ class LocationService:
   def getKakaoLocations(lat: float, lng: float, radius: int = 1000, query: str = "음식") -> List[dict]:
     """Get locations from Kakao API"""
     # Fix URL construction: y=lat, x=lng, add radius parameter
-    queryUrl = f"{LocationService.kakaoAPIUrl}?query={query}&y={lat}&x={lng}&radius={radius}"
-    print(f"Kakao API URL: {queryUrl}")
+    queryUrl = f"{LocationService.kakaoAPIUrl}?query={query}&x={lat}&y={lng}&radius={radius}"
     response = requests.get(
       queryUrl,
       headers={"Authorization": f"KakaoAK {settings.kakaomap_restapi_key}"}
@@ -197,6 +190,7 @@ class LocationService:
 
     locations = results + kakaoLocations + tourAPILocations
 
+    print(locations)
     return locations
 
 
